@@ -1,0 +1,67 @@
+{
+  "text": {
+    "msgtype": "text",
+    "text": {
+      "content": "E2E接口自动化测试完成。"
+    },
+    "at": {
+      "atMobiles": [],
+      "isAtAll": true
+    }
+  },
+  "link": {
+    "msgtype": "link",
+    "link": {
+      "text": "E2E接口自动化测试完成，请查阅报告。",
+      "title": "Automation Notification",
+      "picUrl": "",
+      "messageUrl": "http://10.16.168.61:5000/allure"
+    }
+  },
+  "markdown": {
+    "msgtype": "markdown",
+    "markdown": {
+      "title": "Automation Notification",
+      "text": "### Automation Notification：\n> [<font style=\"color:green\">项目</font>]：E2E接口自动化测试\n\n> [<font style=\"color:green\">报告</font>]：点击[API自动化测试报告](http://10.16.168.61:5000/allure)进行查看\r\n***\r\n"
+    },
+    "at": {
+      "atMobiles": [],
+      "isAtAll": true
+    }
+  },
+  "actionCard": {
+    "actionCard": {
+      "title": "E2E接口自动化测试完成，请查阅报告。",
+      "text": "测试",
+      "btnOrientation": "0",
+      "btns": [
+        {
+          "title": "查看报告",
+          "actionURL": ""
+        },
+        {
+          "title": "不感兴趣",
+          "actionURL": ""
+        }
+      ]
+    },
+    "msgtype": "actionCard"
+  },
+  "feedCard": {
+    "feedCard": {
+      "links": [
+        {
+          "title": "",
+          "messageURL": "",
+          "picURL": ""
+        },
+        {
+          "title": "",
+          "messageURL": "",
+          "picURL": ""
+        }
+      ]
+    },
+    "msgtype": "feedCard"
+  }
+}

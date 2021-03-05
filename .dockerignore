@@ -1,0 +1,20 @@
+# Python:
+**/*.py[cod]
+**/*.so
+**/*.egg
+**/*.egg-info
+**/*.log
+**/*.log.*
+**/Report/*
+**/Result/*
+**/*.pytest_cache
+
+**/dist
+**/build
+**/Cache
+**/.DS_Store
+**/Thumbs.db
+**/*.iml
+**/.idea
+**/*.project
+**/__pycache__

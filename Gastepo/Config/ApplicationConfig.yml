@@ -1,0 +1,59 @@
+---
+email:
+  server: mail.qa.com
+  port: 25
+  user: qa
+  password: 123456
+  sender: sender@qa.com
+  receiver: receiver@qa.com
+  title: 【Automation Notification】
+ding:
+  token: 2d6071704b208154e5ae682b9e52637f9dcd28295d146c79e376a0e3c9063365
+  secret: SEC7582302176a3471ca912d2493077fec793e51e4c41a53d97c0aba6e887a36389
+log:
+  logname: GastepoAutoTest.log
+  logcolor: true
+  when: MIDNIGHT
+  backup: 3
+  console_level: INFO
+  file_level: INFO
+  pattern: '%(asctime)s [%(levelname)s:%(name)s] (%(filename)s:%(funcName)s:%(lineno)s) ~ %(message)s'
+elk:
+  username: qa
+  password: 123456
+jenkins:
+  url: http://localhost:8080/
+  username: qa
+  password: 123456
+---
+mysql:
+  stg:
+    host: 10.9.18.134
+    port: 3306
+    username: ih_user
+    password: ih_user
+mongodb:
+  qa:
+    host: 10.6.0.116
+    port: 27017
+    auth:
+      db: admin
+      username: root
+      password: 123456
+redis:
+  qa:
+    host: 10.6.0.116
+    port: 6379
+rabbitmq:
+  qa:
+    host: 10.6.0.116
+    port: 5672
+    username: qa
+    password: 123456
+    virtual-host: /
+---
+allure:
+  check_count: 5
+runner:
+  group: A
+  actice: true

@@ -1,0 +1,5 @@
+---
+hospital:
+  stg:
+    swagger_docs: http://10.16.168.61:8087/v2/api-docs
+    domain_urls: https://qa.com

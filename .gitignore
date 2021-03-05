@@ -1,0 +1,24 @@
+# Python:
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+*.log
+*.log.*
+*.pytest_cache
+*.scannerwork
+*.coverage
+~$*.*
+
+dist
+build
+.DS_Store
+Thumbs.db
+*.iml
+.idea/
+*.project
+__pycache__/
+Report/
+Result/
+Docker/
+Manual/
