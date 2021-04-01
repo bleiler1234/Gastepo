@@ -5,6 +5,7 @@ import os
 import re
 import sys
 
+import emoji
 import pandas as pd
 
 from Gastepo.Core.Util.CommonUtils import get_alphabet
@@ -24,7 +25,7 @@ class PostmanTools(object):
         """
         if os.path.exists(postman_collection):
             with open(file=postman_collection, mode='r', encoding='utf-8') as collection:
-                postman_collection_str = "".join(collection.readlines())
+                postman_collection_str = emoji.demojize("".join(collection.readlines()))
                 self.postman_collection_dict = json.loads(postman_collection_str)
             if groups is None:
                 self.groups = ["A"]

@@ -61,3 +61,12 @@ class EnvironmentTypeError(Exception):
 
     def __init__(self):
         Exception.__init__(self)
+
+
+class FlakyTestCaseError(Exception):
+    '''
+    弱势或不稳定的测试用例
+    '''
+
+    def __init__(self, msg):
+        Exception.__init__(self, msg)

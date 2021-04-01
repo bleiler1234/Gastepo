@@ -15,6 +15,7 @@ from retrying import retry
 from Gastepo.Core.Base.BaseData import APPLICATION_CONFIG_FILE
 from Gastepo.Core.Util.ConfigUtils import YamlConfig
 from Gastepo.Core.Util.LogUtils import logger
+from Gastepo.Core.Util.CommonUtils import get_ip
 
 
 class DingTools(object):
@@ -97,7 +98,7 @@ class EnvironmentDingTools(DingTools):
             if not os.path.exists(ding_notify_file):
                 raise FileNotFoundError
             with open(file=ding_notify_file, mode=r'r', encoding='utf-8') as ding_file:
-                self.ding = json.loads(ding_file.read())
+                self.ding = json.loads(ding_file.read().replace("ip_address", get_ip()))
             self.token = YamlConfig(config=APPLICATION_CONFIG_FILE).get("ding")["token"]
             self.secret = YamlConfig(config=APPLICATION_CONFIG_FILE).get("ding")["secret"]
             self.timestamp = str(round(time.time() * 1000))

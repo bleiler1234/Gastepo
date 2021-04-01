@@ -15,14 +15,14 @@
       "text": "E2E接口自动化测试完成，请查阅报告。",
       "title": "Automation Notification",
       "picUrl": "",
-      "messageUrl": "http://10.16.168.61:5000/allure"
+      "messageUrl": "http://ip_address:5000/allure"
     }
   },
   "markdown": {
     "msgtype": "markdown",
     "markdown": {
       "title": "Automation Notification",
-      "text": "### Automation Notification：\n> [<font style=\"color:green\">项目</font>]：E2E接口自动化测试\n\n> [<font style=\"color:green\">报告</font>]：点击[API自动化测试报告](http://10.16.168.61:5000/allure)进行查看\r\n***\r\n"
+      "text": "### Automation Notification：\n> [<font style=\"color:green\">项目</font>]：E2E接口自动化测试\n\n> [<font style=\"color:green\">报告</font>]：点击[API自动化测试报告](http://ip_address:5000/allure)进行查看\r\n***\r\n"
     },
     "at": {
       "atMobiles": [],

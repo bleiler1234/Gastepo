@@ -112,8 +112,11 @@ class TestBusinessOperationApi(object):
                                                                                                    headers,
                                                                                                    unicode_to_normal(
                                                                                                        response.request.body),
-                                                                                                   force_to_json(
-                                                                                                       response.text)))
+                                                                                                   json.dumps(
+                                                                                                       force_to_json(
+                                                                                                           response.text),
+                                                                                                       ensure_ascii=False,
+                                                                                                       indent=2)))
             allure.dynamic.description_html(
                 """
                 <font color="gray">请求路径：</font>{}<br/>
@@ -155,7 +158,7 @@ class TestBusinessOperationApi(object):
                                                          pass_flag="PASS")
                 allure.attach(json.dumps(result, indent=1, ensure_ascii=False), name="测试结果",
                               attachment_type=allure.attachment_type.JSON, extension="json")
-        except Exception as reason:
+        except AssertionError as reason:
             # 标记测试结果为失败(xfail或fail)
             with allure.step("测试结果标记"):
                 if session.check_dependency_fail_info_dict is True:

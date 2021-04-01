@@ -45,4 +45,4 @@ def pytest_sessionfinish():
     EnvironmentDingTools(ding_notify_file=os.path.join(RESOURCE_PATH, "Ding", "DingNotifyTemplate.json")).send(
         msgtype='markdown')
     logger.info("O(∩_∩)O【自动化测试全部完成】")
-    # server.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)
+    server.run(host='0.0.0.0', port=5000, debug=True, use_reloader=False)

@@ -8,7 +8,17 @@ pipeline {
     environment {
         project = "GastepoApiAutomation"
     }
+
     stages {
+         stage("Pull From GitLab") {
+            when {
+                environment name: "project", value: "GastepoApiAutomation"
+            }
+            steps {
+                println "[Start]: GastepoApiAutomation Pull From GitLab..."
+                git branch: 'develop', credentialsId: '8b8ba582-6559-41aa-860b-e5335d9f54b6', url: 'https://git.qa.com/GastepoApiAutomation.git'
+            }
+        }
         stage("Set PATH") {
             when {
                 environment name: "project", value: "GastepoApiAutomation"
@@ -24,8 +34,8 @@ pipeline {
                 environment name: "project", value: "GastepoApiAutomation"
             }
             steps {
-                    println "[Start]: Api Automation Test Running..."
-                    sh "cd /automation/GastepoApiAutomation && python3 Run.py"
+                    println "[Start]: GastepoApiAutomation Test Running..."
+                    sh "cd ${WORKSPACE} && /usr/local/python3/bin/python3 Run.py"
             }
         }
         stage("Generate Report") {
@@ -33,14 +43,14 @@ pipeline {
                 environment name: "project", value: "GastepoApiAutomation"
             }
             steps {
-                allure includeProperties: false, jdk: '', results: [[path: 'allure-result']]
+                allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
                 println "[End]: Test Report has been generated."
             }
         }
     }
     post {
         success {
-            println "[Done]: Api Automation Test Done"
+            println "[Done]: GastepoApiAutomation Test Done"
         }
     }
 }

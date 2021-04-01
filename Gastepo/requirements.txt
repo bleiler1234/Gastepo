@@ -24,3 +24,4 @@ fastapi==0.58.1
 uvicorn==0.11.5
 aiofiles==0.5.0
 jenkins==1.0.2
+emoji==1.2.0

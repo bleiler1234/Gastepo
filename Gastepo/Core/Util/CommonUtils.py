@@ -14,6 +14,7 @@ import sys
 import time
 from collections import OrderedDict
 
+import emoji
 import xmltodict
 
 from Gastepo.Core.Base.BaseData import APPLICATION_CONFIG_FILE
@@ -279,8 +280,10 @@ def force_to_json(origin):
     :return:
     """
     if re.match(r"(^\{[\s\S]*\}$)|(^\[\{[\s\S]*\}\]$|\[\])", str(origin)):
-        return json.loads(str(origin))
+        return json.loads(emoji.demojize(json.dumps(json.loads(emoji.demojize(str(origin))), ensure_ascii=False)))
     else:
+        if isinstance(origin, str):
+            origin = emoji.demojize(origin)
         return {"qa": origin}
 
 

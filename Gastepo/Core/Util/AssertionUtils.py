@@ -6,6 +6,7 @@ import re
 from hamcrest import *
 from jsonpath import jsonpath
 
+from Base.CustomException import FlakyTestCaseError
 from Gastepo.Core.Base.BaseData import MATCHER_TYPE
 from Gastepo.Core.Extend.AssertDependencyExtends import *
 from Gastepo.Core.Extend.HamcrestCustomExtends import *
@@ -69,6 +70,7 @@ class AssertionTools(object):
         if err_info == {}:
             logger.warning(
                 "[WARNING]：[{}]~[{}]基础断言当前未设置任何检查信息，请首先指定！".format(self.test_case["ID"], self.test_case["Title"]))
+            raise FlakyTestCaseError(msg="当前基础断言未设置任何检查信息")
         else:
             logger.info("[Checking]：[{}]~[{}]开启基础断言检查......".format(self.test_case["ID"], self.test_case["Title"]))
             for key, value in err_info.items():
@@ -106,6 +108,11 @@ class AssertionTools(object):
                 if invalid_matchers != []:
                     raise AssertionError('断言信息中matcher断言器"{}"当前并不支持, 请重新指定！'.format(invalid_matchers))
                 else:
+                    logger.info("[Injected]：高级断言注入结果为：\n{}".format(
+                        json.dumps(dict(actual=match_result,
+                                        expect=expect_vars,
+                                        matcher=assert_dict.get("matcher"),
+                                        alert=assert_dict.get("alert")), ensure_ascii=False, indent=2)))
                     assert_that(match_result,
                                 is_(eval(
                                     self.combine_matcher(matcher_expr=assert_dict.get("matcher"), params=expect_vars))),
@@ -359,6 +366,7 @@ class AdvanceAssertionTools(AssertionTools):
         if err_info == {}:
             logger.warning(
                 "[WARNING]：[{}]~[{}]基础断言当前未设置任何检查信息，请首先指定！".format(self.test_case["ID"], self.test_case["Title"]))
+            raise FlakyTestCaseError(msg="当前基础断言未设置任何检查信息")
         else:
             logger.info("[Checking]：[{}]~[{}]开启基础断言检查......".format(self.test_case["ID"], self.test_case["Title"]))
             for key, value in err_info.items():
@@ -386,6 +394,7 @@ class AdvanceAssertionTools(AssertionTools):
                     multi_flag = True if assert_dict.get("multi") is True else False
                 else:
                     multi_flag = False
+                assert_dict["multi"] = multi_flag
                 match_result = self.expr_identity(assert_dict.get("actual"), fetch_actual=True, multi=multi_flag)
                 expect_vars = self.check_expect(actual=None, multi=multi_flag, expect=assert_dict.get("expect"))
                 if expect_vars == []:
@@ -394,6 +403,12 @@ class AdvanceAssertionTools(AssertionTools):
                 if invalid_matchers != []:
                     raise AssertionError('断言信息中matcher断言器"{}"当前并不支持, 请重新指定！'.format(invalid_matchers))
                 else:
+                    logger.info("[Injected]：高级断言注入结果为：\n{}".format(
+                        json.dumps(dict(actual=match_result,
+                                        expect=expect_vars,
+                                        matcher=assert_dict.get("matcher"),
+                                        alert=assert_dict.get("alert"),
+                                        multi=assert_dict.get("multi")), ensure_ascii=False, indent=2)))
                     assert_that(match_result,
                                 is_(eval(
                                     self.combine_matcher(matcher_expr=assert_dict.get("matcher"), params=expect_vars))),
