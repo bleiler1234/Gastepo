@@ -8,6 +8,7 @@ from jsonpath import jsonpath
 
 from Gastepo.Core.Base.CustomException import InvalidConsumesError
 from Gastepo.Core.Extend.AssertDependencyExtends import *
+from Gastepo.Core.Util.CommonUtils import emoji_to_str
 from Gastepo.Core.Util.CommonUtils import param_to_dict, value_by_type, xml_to_json, json_to_xml
 from Gastepo.Core.Util.LogUtils import logger
 
@@ -1543,20 +1544,20 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
             if result is None:
                 logger.warning('[WARNING]：【{}数据依赖】数据依赖求值表达式"{}"当前所求值为None，请检查！'.format(maintainer, param_expr))
                 self.dependency_fail_identity(maintainer)
-            return result
+            return emoji_to_str(result)
         elif isinstance(param_expr, dict):
             for key, value in param_expr.items():
                 if re.match(r'^/{1}.+', key):
-                    return self.schema_dependency(maintainer=maintainer, expr_key=key, expr_value=value)
+                    return emoji_to_str(self.schema_dependency(maintainer=maintainer, expr_key=key, expr_value=value))
                 elif re.match(r'^\$\{.*\}$', key):
-                    return self.schema_function(maintainer=maintainer, expr_key=key, expr_value=value)
+                    return emoji_to_str(self.schema_function(maintainer=maintainer, expr_key=key, expr_value=value))
                 else:
                     pass
             logger.warning(
                 '[WARNING]：【{}数据依赖】数据依赖字典表达式{}当前未匹配到任何字典规则(字典规则当前支持接口依赖及函数依赖)，请检查！'.format(maintainer, param_expr))
             self.dependency_fail_identity(maintainer)
         else:
-            return param_expr
+            return emoji_to_str(param_expr)
 
     def schema_dependency(self, maintainer, expr_key, expr_value):
         """
@@ -1584,7 +1585,7 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
                 logger.info(
                     '[Dependency]：【{}接口依赖】{}完成一次依赖接口"{}"的响应体期望数据替换，jsonPath表达式为"{}"，获取期望值为{}.'.format(
                         maintainer, maintainer, url, depend_jsonpath_expression, depend_jsonpath_value))
-                return depend_jsonpath_value
+                return emoji_to_str(depend_jsonpath_value)
         else:
             logger.warning('[WARNING]：【{}接口依赖】当前接口响应缓存字典中不存在依赖接口"{}"的任何响应数据！'.format(maintainer, url))
             self.dependency_fail_identity(maintainer)

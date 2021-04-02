@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "Gastepo"
 version = "0.0.1"
-description = "An base-on Schema DSL api test framework."
+description = "An base-on Schema DSL automation framework of Restful API."
 authors = ["yuzhonghua <583512498@qq.com>"]
 license = "MIT"
 readme = "README.md"

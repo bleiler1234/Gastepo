@@ -188,6 +188,28 @@ def json_to_xml(json_dict):
     return xml_str
 
 
+def emoji_to_str(origin):
+    """
+    将Emoji表情转换为字符窜
+    :param origin:
+    :return:
+    """
+    if isinstance(origin, str):
+        return emoji.demojize(origin)
+    elif isinstance(origin, list):
+        return list(map(lambda x: emoji_to_str(x), origin))
+    elif isinstance(origin, tuple):
+        return tuple(map(lambda x: emoji_to_str(x), origin))
+    elif isinstance(origin, set):
+        return set(map(lambda x: emoji_to_str(x), origin))
+    elif isinstance(origin, dict):
+        keys = list(map(lambda x: emoji_to_str(x), list(origin.keys())))
+        values = list(map(lambda x: emoji_to_str(x), list(origin.values())))
+        return dict(zip(keys, values))
+    else:
+        return origin
+
+
 def get_alphabet(number):
     """
     将数字转换为大写字母
@@ -428,6 +450,4 @@ def runner_argv():
 
 
 if __name__ == '__main__':
-    # update_run_environment("DEV")
-    # print(get_run_environment())
-    execute_command()
+    pass

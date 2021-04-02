@@ -12,6 +12,7 @@ from Gastepo.Core.Extend.AssertDependencyExtends import *
 from Gastepo.Core.Extend.HamcrestCustomExtends import *
 from Gastepo.Core.Util.CommonUtils import value_by_type
 from Gastepo.Core.Util.LogUtils import logger
+from Gastepo.Core.Util.CommonUtils import emoji_to_str
 
 
 class AssertionTools(object):
@@ -395,8 +396,8 @@ class AdvanceAssertionTools(AssertionTools):
                 else:
                     multi_flag = False
                 assert_dict["multi"] = multi_flag
-                match_result = self.expr_identity(assert_dict.get("actual"), fetch_actual=True, multi=multi_flag)
-                expect_vars = self.check_expect(actual=None, multi=multi_flag, expect=assert_dict.get("expect"))
+                match_result = emoji_to_str(self.expr_identity(assert_dict.get("actual"), fetch_actual=True, multi=multi_flag))
+                expect_vars = emoji_to_str(self.check_expect(actual=None, multi=multi_flag, expect=assert_dict.get("expect")))
                 if expect_vars == []:
                     expect_vars = [""]
                 invalid_matchers = self.check_matcher_type(matcher_info=assert_dict.get("matcher"))
