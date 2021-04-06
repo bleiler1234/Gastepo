@@ -14,6 +14,9 @@ ENVIRONMENT_CONFIG_FILE = os.path.join(BASE_PATH, 'Config', 'EnvironmentConfig.y
 # ------------ 资源文件路径 -----------
 RESOURCE_PATH = os.path.join(BASE_PATH, 'Resource')
 
+# ------------ 在线服务路径 -----------
+SERVER_PATH = os.path.join(BASE_PATH, 'Core', "Server")
+
 # ------------ 测试用例路径 -----------
 TESTCASE_PATH = os.path.join(BASE_PATH, 'TestSuite', 'TestCase')
 

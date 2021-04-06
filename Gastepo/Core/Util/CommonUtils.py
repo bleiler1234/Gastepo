@@ -15,7 +15,10 @@ import time
 from collections import OrderedDict
 
 import emoji
+import requests
 import xmltodict
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 from Gastepo.Core.Base.BaseData import APPLICATION_CONFIG_FILE
 from Gastepo.Core.Base.CustomException import SystemOSTypeError
@@ -208,6 +211,98 @@ def emoji_to_str(origin):
         return dict(zip(keys, values))
     else:
         return origin
+
+
+def capture_image(width, height, url, sleep, pic):
+    """
+    通过Selenium进行截屏并保存
+    :param width: 浏览器宽度
+    :param height: 浏览器高度
+    :param url: 待浏览网址
+    :param sleep: 加载等待时间
+    :param pic: 截屏存取路径
+    :return:
+    """
+    try:
+        logger.info("[ScreenShot]：开始截屏，请稍等...")
+        chrome_options = Options()
+        chrome_options.add_argument('--headless')
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.set_window_size(width=width, height=height)
+        driver.get(url=url)
+        time.sleep(sleep)
+        driver.save_screenshot(pic)
+        driver.close()
+        driver.quit()
+        logger.info("[Success]：截屏成功，存取路径为{}".format(pic))
+        return pic
+    except Exception:
+        logger.exception("[Failure]：截屏失败，请检查并重试！！！")
+
+
+def sm_ms(pic):
+    """
+    上传图片到sm.ms图床
+    :param pic: 图片本地路径
+    :return:
+    """
+    # 需要登录sm.ms去获取自己的API Token
+    headers = {'Authorization': 'KdaYAzW2XW6WzLqivXT7UNlSj1mW1fyD'}
+    history_url = "https://sm.ms/api/v2/upload_history"
+    delete_url = "https://sm.ms/api/v2/delete/<hashid>"
+    upload_url = 'https://sm.ms/api/v2/upload'
+
+    def upload(pic):
+        files = {'smfile': open(pic, 'rb')}
+        upload_res_json = requests.post(upload_url, files=files, headers=headers).json()
+        if upload_res_json["success"] is True:
+            result_dict = dict(view_url=upload_res_json["data"]["url"], remove_url=upload_res_json["data"]["delete"])
+            logger.info("图片上传sm.ms成功，其在线访问信息为：{}".format(result_dict))
+            return result_dict.get("view_url")
+        else:
+            logger.error("图片上传sm.ms失败！其返回错误信息为：{}".format(upload_res_json["message"]))
+
+    history_res_json = requests.get(url=history_url, headers=headers).json()
+    history_pic_data = history_res_json.get("data")
+    if history_pic_data == []:
+        logger.info("当前sm.ms不存在任何图片信息，开始上传图片...")
+        return upload(pic=pic)
+    else:
+        history_pic_infos = [dict(filename=pic_info["filename"], hashid=pic_info["hash"]) for pic_info in
+                             history_pic_data]
+        history_pic_names = [pic_info.get("filename") for pic_info in history_pic_infos]
+        now_pic_name = os.path.split(pic)[1]
+        if now_pic_name in history_pic_names:
+            logger.warning("当前sm.ms已存在图片{}，开始自动删除...".format(now_pic_name))
+            now_pic_hashid = \
+                [pic_info["hashid"] for pic_info in history_pic_infos if pic_info["filename"] == now_pic_name][0]
+            delete_res_json = requests.get(url=delete_url.replace("<hashid>", now_pic_hashid)).json()
+            if delete_res_json["success"] is True:
+                logger.info("sm.ms图片{}删除成功，开始重新上传图片...".format(now_pic_name))
+                return upload(pic=pic)
+            else:
+                logger.error("sm.ms图片{}删除失败，失败信息为：{}".format(now_pic_name, delete_res_json["message"]))
+                logger.info("继续尝试上传图片...")
+                return upload(pic=pic)
+        else:
+            logger.info("当前sm.ms不存在图片{}，开始上传图片...".format(now_pic_name))
+            return upload(pic=pic)
+
+
+def face_bed(pic):
+    url = "https://www.hualigs.cn/api/upload"
+    payload = {'apiType': 'ali',
+               'token': 'a147025c7b625acb3e3ceda751621089'}  # 需要登录hualigs.cn去获取自己的API Token
+    files = [
+        ('image', open(pic, 'rb'))
+    ]
+    res_json = requests.post(url, data=payload, files=files).json()
+    if res_json["msg"] == "success":
+        cdn_url = res_json["data"]["url"]["ali"]
+        logger.info("图片上传成功，CDN地址为：{}".format(cdn_url))
+        return cdn_url
+    else:
+        logger.error("图片上传失败！其返回错误信息为：{}".format(res_json))
 
 
 def get_alphabet(number):

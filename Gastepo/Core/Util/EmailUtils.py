@@ -112,12 +112,12 @@ class Email(object):
         self.msg.attach(att)
         logger.info('邮件已添加附件 {}'.format(filename))
 
-    def attachImage(self, path=os.path.join(RESOURCE_PATH, "Others")):
+    def attachImage(self, path=os.path.join(RESOURCE_PATH, "Allure")):
         '''
         构造附图扩展
         :param path: 图片路径
         '''
-        with open(os.path.join(path, 'sklearn.png'), 'rb') as f:
+        with open(os.path.join(path, 'Allure.png'), 'rb') as f:
             attimg = MIMEImage(f.read())
         attimg.add_header('Content-ID', '<image1>')
         return attimg

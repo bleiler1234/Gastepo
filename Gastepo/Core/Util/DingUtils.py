@@ -12,10 +12,10 @@ import urllib.parse
 import requests
 from retrying import retry
 
-from Gastepo.Core.Base.BaseData import APPLICATION_CONFIG_FILE
+from Gastepo.Core.Base.BaseData import APPLICATION_CONFIG_FILE, RESOURCE_PATH
+from Gastepo.Core.Util.CommonUtils import get_ip, capture_image, face_bed
 from Gastepo.Core.Util.ConfigUtils import YamlConfig
 from Gastepo.Core.Util.LogUtils import logger
-from Gastepo.Core.Util.CommonUtils import get_ip
 
 
 class DingTools(object):
@@ -88,17 +88,34 @@ class EnvironmentDingTools(DingTools):
     钉钉机器人消息提醒工具类(依赖环境配置文件)
     """
 
-    def __init__(self, ding_notify_file):
+    def __init__(self, ding_notify_file, allure_report_url=None):
         """
         从应用配置文件获取钉钉请求token及签名secret
-        :param ding_notify_file: 钉钉消息通知模板文件
+        :param ding_notify_file: 钉钉消息模板文件
+        :param allure_report_url: 在线测试报告地址
         """
         try:
             DingTools.__init__(self)
             if not os.path.exists(ding_notify_file):
                 raise FileNotFoundError
             with open(file=ding_notify_file, mode=r'r', encoding='utf-8') as ding_file:
-                self.ding = json.loads(ding_file.read().replace("ip_address", get_ip()))
+                if allure_report_url is None:
+                    self.ding = json.loads(ding_file.read().replace("ip_address", get_ip())
+                                           .replace("![Allure](report_url)", ""))
+                else:
+                    self.ding = json.loads(ding_file.read()
+                                           .replace("ip_address", get_ip())
+                                           .replace("report_url", face_bed(pic=capture_image(width=1440,
+                                                                                             height=797,
+                                                                                             url=allure_report_url,
+                                                                                             sleep=10,
+                                                                                             pic=os.path.join(
+                                                                                                 RESOURCE_PATH,
+                                                                                                 "Allure",
+                                                                                                 "Allure.png")
+                                                                                             ))
+                                                    )
+                                           )
             self.token = YamlConfig(config=APPLICATION_CONFIG_FILE).get("ding")["token"]
             self.secret = YamlConfig(config=APPLICATION_CONFIG_FILE).get("ding")["secret"]
             self.timestamp = str(round(time.time() * 1000))

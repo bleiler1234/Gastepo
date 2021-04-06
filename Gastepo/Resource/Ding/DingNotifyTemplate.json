@@ -22,7 +22,7 @@
     "msgtype": "markdown",
     "markdown": {
       "title": "Automation Notification",
-      "text": "### Automation Notification：\n> [<font style=\"color:green\">项目</font>]：E2E接口自动化测试\n\n> [<font style=\"color:green\">报告</font>]：点击[API自动化测试报告](http://ip_address:5000/allure)进行查看\r\n***\r\n"
+      "text": "### Automation Notification：\n> [<font style=\"color:green\">项目</font>]：E2E接口自动化测试\n\n> [<font style=\"color:green\">报告</font>]：点击[API自动化测试报告](http://ip_address:5000/allure)进行查看\r\n***\r\n![Allure](report_url)\r\n***\r\n"
     },
     "at": {
       "atMobiles": [],
