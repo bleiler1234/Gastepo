@@ -427,7 +427,12 @@ def force_to_json(origin):
     else:
         if isinstance(origin, str):
             origin = emoji.demojize(origin)
-        return {"qa": origin}
+            if re.search(pattern=r'<\?[\s\S]*\?>', string=str(origin).strip()) is not None:
+                return {"qa": json.loads(xml_to_json(origin))}
+            else:
+                return {"qa": origin}
+        else:
+            return {"qa": origin}
 
 
 def sortDict(pyload, reverse=False):

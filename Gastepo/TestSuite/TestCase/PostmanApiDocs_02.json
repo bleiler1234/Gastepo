@@ -17,13 +17,13 @@
 								"exec": [
 									"[",
 									"    {",
-									"        \"actual\": \"$.history.id\",",
+									"        \"actual\": \"$.qa.history.id\",",
 									"        \"expect\": [\"1\"],",
 									"        \"matcher\": \"has_item\",",
 									"        \"alert\": \"id错误！\"",
 									"    },",
 									"    {",
-									"        \"actual\": \"$.history.battle[0].location\",",
+									"        \"actual\": \"$.qa.history.battle[0].location\",",
 									"        \"expect\": [\"Japan\"],",
 									"        \"matcher\": \"has_item\",",
 									"        \"alert\": \"首次应为Japan！\"",
@@ -258,8 +258,8 @@
 									"        \"to_header\": {},",
 									"        \"to_param\": {},",
 									"        \"to_data\": {",
-									"            \"$['history']['id']\": { \"${str(a)}\": { \"a\": { \"/mock/get_xml01\": \"$.history.id\" } } },",
-									"            \"$['history']['name']\": { \"/mock/get_xml01\": \"$.history.name\" }",
+									"            \"$['history']['id']\": { \"${str(a)}\": { \"a\": { \"/mock/get_xml01\": \"$.qa.history.id\" } } },",
+									"            \"$['history']['name']\": { \"/mock/get_xml01\": \"$.qa.history.name\" }",
 									"        }",
 									"    }",
 									"]"
@@ -273,13 +273,13 @@
 								"exec": [
 									"[",
 									"    {",
-									"        \"actual\": \"$.result.history.id\",",
+									"        \"actual\": \"$.qa.result.history.id\",",
 									"        \"expect\": [\"1\"],",
 									"        \"matcher\": \"has_item\",",
 									"        \"alert\": \"id错误！\"",
 									"    },",
 									"    {",
-									"        \"actual\": \"$.result.history.battle[0].location\",",
+									"        \"actual\": \"$.qa.result.history.battle[0].location\",",
 									"        \"expect\": [\"Japan\"],",
 									"        \"matcher\": \"has_item\",",
 									"        \"alert\": \"首次应为Japan！\"",
@@ -386,7 +386,7 @@
 									"        \"to_data\": {",
 									"            \"$['id']\": {",
 									"                \"${str(a)}\": {",
-									"                    \"a\": { \"/mock/get_xml01\": \"$.history.id\" }",
+									"                    \"a\": { \"/mock/get_xml01\": \"$.qa.history.id\" }",
 									"                }",
 									"            }",
 									"        }",
@@ -445,8 +445,8 @@
 									"key": "files",
 									"type": "file",
 									"src": [
-										"/Users/mayer/Project/PycharmProjects/Gastepo/Resource/Others/file1.txt",
-										"/Users/mayer/Project/PycharmProjects/Gastepo/Resource/Others/file2.txt"
+										"/Users/mayer/Project/PycharmProjects/Automation/Gastepo/Gastepo/Resource/Others/file1.txt",
+										"/Users/mayer/Project/PycharmProjects/Automation/Gastepo/Gastepo/Resource/Others/file2.txt"
 									]
 								}
 							]
