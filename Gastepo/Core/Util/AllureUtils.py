@@ -7,7 +7,7 @@ from subprocess import CalledProcessError
 
 from Gastepo.Core.Base.BaseData import APPLICATION_CONFIG_FILE
 from Gastepo.Core.Base.BaseData import RESULT_PATH, REPORT_PATH, RESOURCE_PATH
-from Gastepo.Core.Util.CommonUtils import execute_command
+from Gastepo.Core.Util.CommonUtils import run_command
 from Gastepo.Core.Util.ConfigUtils import YamlConfig
 from Gastepo.Core.Util.LogUtils import logger
 
@@ -53,7 +53,7 @@ class AllureTools(object):
                 command = "allure generate {0} -o {1} --clean".format(ALLURE_RESULT, ALLURE_REPORT)
                 time.sleep(1)
                 logger.info('开始执行Allure测试报告生成命令："{}"'.format(command))
-                execute_command(command)
+                run_command(command)
                 logger.info("[Done]：已经成功生成Allure测试报告.")
             else:
                 logger.warning("[Warning]：由于未检测到Allure测试结果json文件，停止生成Allure测试报告！")

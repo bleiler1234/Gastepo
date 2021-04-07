@@ -3,10 +3,10 @@
 import os
 
 import pytest
-import subprocess
 
 from Gastepo.Core.Base.BaseData import RESOURCE_PATH, SERVER_PATH
 from Gastepo.Core.Util.AllureUtils import AllureTools
+from Gastepo.Core.Util.CommonUtils import pipe_command
 from Gastepo.Core.Util.DingUtils import EnvironmentDingTools
 from Gastepo.Core.Util.LogUtils import logger
 
@@ -40,9 +40,7 @@ def pytest_sessionfinish():
     """
     logger.info("☞【同步测试结果】")
     AllureTools.generate_report()
-    subprocess.Popen(
-        "nohup python3 {}".format(os.path.join(SERVER_PATH, "MainServer.py")),
-        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    pipe_command("nohup python3 {}".format(os.path.join(SERVER_PATH, "MainServer.py")))
     # Email().send("E2E接口自动化测试完成，请查阅报告。")
     EnvironmentDingTools(ding_notify_file=os.path.join(RESOURCE_PATH, "Ding", "DingNotifyTemplate.json"),
                          allure_report_url="http://localhost:5000/allure").send(

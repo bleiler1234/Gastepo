@@ -5,6 +5,7 @@ import calendar
 import datetime
 import json
 import os
+import platform
 import random
 import re
 import socket
@@ -130,19 +131,44 @@ def date_timedelta(date_str):
     return result
 
 
-def execute_command(command):
+def run_command(command):
     """
     执行终端命令.
     :param command: 字符串形式命令(根据系统识别命令方式)
     :return:
     """
-    if os.name == 'posix':
+    system = platform.system()
+    if system == 'Linux':
         subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-    elif os.name == 'nt':
+    elif system == "Darwin":
+        subprocess.run("source ~/.bash_profile && " + str(command), shell=True, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, check=True)
+    elif system == 'Windows':
         windows_command = ['cmd', '/c']
         command_detail_list = re.split(r"[ ]+", command)
         windows_command.extend(command_detail_list)
         subprocess.run(windows_command, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+    else:
+        raise SystemOSTypeError
+
+
+def pipe_command(command):
+    """
+    执行终端命令.
+    :param command: 字符串形式命令(根据系统识别命令方式)
+    :return:
+    """
+    system = platform.system()
+    if system == 'Linux':
+        subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    elif system == "Darwin":
+        subprocess.Popen("source ~/.bash_profile && " + str(command), shell=True, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    elif system == 'Windows':
+        windows_command = ['cmd', '/c']
+        command_detail_list = re.split(r"[ ]+", command)
+        windows_command.extend(command_detail_list)
+        subprocess.Popen(windows_command, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     else:
         raise SystemOSTypeError
 
