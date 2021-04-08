@@ -1,7 +1,7 @@
-# Automation Dockerfile
+# Gastepo Dockerfile
 
 FROM python:3.7.4
-MAINTAINER zhonghua2040@163.com
+MAINTAINER yuzhonghua
 
 # set default shell
 SHELL ["/bin/bash", "-c"]
@@ -16,7 +16,7 @@ EXPOSE 5000/tcp 5001/tcp 5002/tcp
 ARG Project
 
 # set environment variables
-ENV Project ${Project:-GastepoApiAutomation}
+ENV Project ${Project:-Gastepo}
 
 # set workdir
 WORKDIR /Automation/$Project
@@ -33,6 +33,12 @@ ADD ./Docker/allure.tgz /software/allure
 # copy project to workdir
 COPY ./Gastepo .
 
+# copy run shell to workdir
+COPY ./Docker/start.sh .
+
+# change run shell mode
+RUN chmod 777 start.sh
+
 # set PATH environment
 RUN echo -e "JAVA_HOME=/software/jdk8/jdk1.8.0_211\nJRE_HOME=\$JAVA_HOME/jre\nCLASSPATH=.:\$JAVA_HOME/lib:\$JRE_HOME/lib\nPATH=$PATH:\$JAVA_HOME/bin:\$JRE_HOME/bin:/software/nodejs/node-v12.18.1-linux-x64/bin:/software/allure/package/bin" >> /etc/profile \
 	&& source /etc/profile \
@@ -44,11 +50,7 @@ RUN ln -s /software/nodejs/node-v12.18.1-linux-x64 /usr/bin/node \
     && echo 'Asia/Shanghai' >/etc/timezone
 
 # install python dependency packages
-RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-
-# move automation shell and change mode
-RUN mv ./Docker/start.sh . \
-    && chmod 777 start.sh
+RUN pip install -r requirements.txt -i https://pypi.douban.com/simple/
 
 # execute automation shell
 CMD ["./start.sh"]

@@ -88,18 +88,18 @@ class EnvironmentDingTools(DingTools):
     钉钉机器人消息提醒工具类(依赖环境配置文件)
     """
 
-    def __init__(self, ding_notify_file, allure_report_url=None):
+    def __init__(self, ding_notify_file, preview_mode=False):
         """
         从应用配置文件获取钉钉请求token及签名secret
         :param ding_notify_file: 钉钉消息模板文件
-        :param allure_report_url: 在线测试报告地址
+        :param preview_mode: 测试报告截图预览
         """
         try:
             DingTools.__init__(self)
             if not os.path.exists(ding_notify_file):
                 raise FileNotFoundError
             with open(file=ding_notify_file, mode=r'r', encoding='utf-8') as ding_file:
-                if allure_report_url is None:
+                if preview_mode is False:
                     self.ding = json.loads(ding_file.read().replace("ip_address", get_ip())
                                            .replace("![Allure](report_url)", ""))
                 else:
@@ -107,7 +107,7 @@ class EnvironmentDingTools(DingTools):
                                            .replace("ip_address", get_ip())
                                            .replace("report_url", face_bed(pic=capture_image(width=1440,
                                                                                              height=797,
-                                                                                             url=allure_report_url,
+                                                                                             url="http://localhost:5000/allure",
                                                                                              sleep=10,
                                                                                              pic=os.path.join(
                                                                                                  RESOURCE_PATH,

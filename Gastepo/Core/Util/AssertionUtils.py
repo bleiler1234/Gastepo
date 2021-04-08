@@ -6,7 +6,7 @@ import re
 from hamcrest import *
 from jsonpath import jsonpath
 
-from Base.CustomException import FlakyTestCaseError
+from Gastepo.Core.Base.CustomException import FlakyTestCaseError
 from Gastepo.Core.Base.BaseData import MATCHER_TYPE
 from Gastepo.Core.Extend.AssertDependencyExtends import *
 from Gastepo.Core.Extend.HamcrestCustomExtends import *

@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
-import sys
-
-sys.path.append("/automation/PlatformAutoTest")
 import json
 import os
-from typing import List, Any, Optional
 import secrets
+from typing import List, Any, Optional
 
 import uvicorn
 from fastapi import FastAPI, Request, Response, Path, Query, Header, Form, File, UploadFile, Depends, status
@@ -13,7 +10,6 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.security import HTTPBasicCredentials, HTTPBasic
-
 from pydantic import BaseModel
 
 from Gastepo.Core.Util.CommonUtils import json_to_xml, xml_to_json
@@ -237,4 +233,4 @@ async def auth01():
 
 # 启动服务
 if __name__ == '__main__':
-    uvicorn.run(app="MockServer:server", host="10.6.0.116", port=11014, debug=True, reload=True)
+    uvicorn.run(app="MockServer:server", host="0.0.0.0", port=5002, debug=True, reload=True)

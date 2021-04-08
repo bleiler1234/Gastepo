@@ -6,22 +6,22 @@ pipeline {
         disableConcurrentBuilds()
     }
     environment {
-        project = "GastepoApiAutomation"
+        project = "Gastepo"
     }
 
     stages {
          stage("Pull From GitLab") {
             when {
-                environment name: "project", value: "GastepoApiAutomation"
+                environment name: "project", value: "Gastepo"
             }
             steps {
-                println "[Start]: GastepoApiAutomation Pull From GitLab..."
-                git branch: 'develop', credentialsId: '8b8ba582-6559-41aa-860b-e5335d9f54b6', url: 'https://git.qa.com/GastepoApiAutomation.git'
+                println "[Start]: Gastepo Pull From GitLab..."
+                git branch: 'develop', credentialsId: '8b8ba582-6559-41aa-860b-e5335d9f54b6', url: 'https://git.qa.com/Gastepo.git'
             }
         }
         stage("Set PATH") {
             when {
-                environment name: "project", value: "GastepoApiAutomation"
+                environment name: "project", value: "Gastepo"
             }
             steps {
                 println "Now preparing Job No.${env.BUILD_ID} on ${env.NODE_NAME}"
@@ -31,16 +31,16 @@ pipeline {
         }
         stage("Run Test") {
             when {
-                environment name: "project", value: "GastepoApiAutomation"
+                environment name: "project", value: "Gastepo"
             }
             steps {
-                    println "[Start]: GastepoApiAutomation Test Running..."
+                    println "[Start]: Gastepo Test Running..."
                     sh "cd ${WORKSPACE} && /usr/local/python3/bin/python3 Run.py"
             }
         }
         stage("Generate Report") {
             when {
-                environment name: "project", value: "GastepoApiAutomation"
+                environment name: "project", value: "Gastepo"
             }
             steps {
                 allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
@@ -50,7 +50,7 @@ pipeline {
     }
     post {
         success {
-            println "[Done]: GastepoApiAutomation Test Done"
+            println "[Done]: Gastepo Test Done"
         }
     }
 }

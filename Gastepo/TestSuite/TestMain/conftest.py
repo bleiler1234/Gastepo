@@ -43,6 +43,5 @@ def pytest_sessionfinish():
     pipe_command("python3 {}".format(os.path.join(SERVER_PATH, "MainServer.py")))
     # Email().send("E2E接口自动化测试完成，请查阅报告。")
     EnvironmentDingTools(ding_notify_file=os.path.join(RESOURCE_PATH, "Ding", "DingNotifyTemplate.json"),
-                         allure_report_url="http://localhost:5000/allure").send(
-        msgtype='markdown')
+                         preview_mode=True).send(msgtype='markdown')
     logger.info("O(∩_∩)O【自动化测试全部完成】")
