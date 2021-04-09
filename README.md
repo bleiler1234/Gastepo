@@ -98,7 +98,7 @@ allure generate {json测试结果目录} -o {html测试报告目录} --clean
 - <u>**docker container**</u>
 
 ```shell
-docker run --name automation -p 5000 -v {配置文件映射卷} -v {数据文件映射卷} qa/api-business-automation
+docker run --name gastepo -itd -p 5000:5000 -v {配置文件映射卷} -v {数据文件映射卷} gastepo:v0.0.1
 ```
 
 ***

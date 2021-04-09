@@ -139,7 +139,8 @@ def run_command(command):
     """
     system = platform.system()
     if system == 'Linux':
-        subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        subprocess.run("source /etc/profile && " + str(command), shell=True, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, check=True)
     elif system == "Darwin":
         subprocess.run("source ~/.bash_profile && " + str(command), shell=True, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, check=True)
@@ -160,7 +161,8 @@ def pipe_command(command):
     """
     system = platform.system()
     if system == 'Linux':
-        subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.Popen("source /etc/profile && " + str(command), shell=True, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
     elif system == "Darwin":
         subprocess.Popen("source ~/.bash_profile && " + str(command), shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
@@ -316,6 +318,11 @@ def sm_ms(pic):
 
 
 def face_bed(pic):
+    """
+    上传图片到遇见图床
+    :param pic:
+    :return:
+    """
     url = "https://www.hualigs.cn/api/upload"
     payload = {'apiType': 'ali',
                'token': 'a147025c7b625acb3e3ceda751621089'}  # 需要登录hualigs.cn去获取自己的API Token
