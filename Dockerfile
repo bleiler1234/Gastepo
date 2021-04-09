@@ -19,7 +19,7 @@ ARG Project
 ENV Project ${Project:-Gastepo}
 
 # set workdir
-WORKDIR /Automation/$Project
+WORKDIR /Automation/$Project/Gastepo
 
 # copy and extract jdk8
 ADD ./Docker/jdk8.gz /software/jdk8

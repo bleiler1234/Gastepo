@@ -6,7 +6,7 @@ import shutil
 
 def init_skeleton(args):
     try:
-        shutil.copytree(os.path.dirname(os.path.abspath(__file__)), args.project)
+        shutil.copytree(os.path.dirname(os.path.abspath(__file__)), os.path.join(args.project, "Gastepo"))
         print("[O(∩_∩)O]: Bingo!!! The project was initialized successfully, It is located on {}.".format(args.project))
     except Exception:
         print("[(o´ﾟ□ﾟ`o)]: Damn!!! An exception occurred while initializing the project directory.")

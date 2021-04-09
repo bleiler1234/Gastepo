@@ -9,7 +9,7 @@ container_exists=`docker ps -a | grep gastepo`
 function run_container() {
     if [[ -z "$container_exists" ]];then
         echo "Now create docker container named gastepo..."
-        docker create --name gastepo -p 5000:5000 -v /Users/mayer/Software/Docker/Automation/gastepo/config:/Automation/Gastepo/Config -v /Users/mayer/Software/Docker/Automation/gastepo/data:/Automation/Gastepo/TestSuite/TestCase automation/gastepo
+        docker create --name gastepo -p 5000:5000 -v /Users/mayer/Software/Docker/Automation/gastepo/config:/Automation/Gastepo/Gastepo/Config -v /Users/mayer/Software/Docker/Automation/gastepo/data:/Automation/Gastepo/Gastepo/TestSuite/TestCase automation/gastepo
         if [[ -n $(docker ps -a | grep gastepo) ]];then
             echo "[Success]: docker container named gastepo has been created successfully!"
             echo "Now start docker container named gastepo..."

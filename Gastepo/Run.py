@@ -10,8 +10,12 @@ from Gastepo.Core.Util.CommonUtils import pipe_command
 
 
 def main():
-    Thread(target=pipe_command, name="ServerThread",
-           args=("python3 {}".format(os.path.join(SERVER_PATH, "MainServer.py")),)).start()
+    Thread(
+        target=pipe_command,
+        name="ServerThread",
+        args=("python3 {}".format(os.path.join(SERVER_PATH, "MainServer.py")),),
+        daemon=True
+    ).start()
     pytest.main()
 
 
