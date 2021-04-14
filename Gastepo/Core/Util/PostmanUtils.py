@@ -8,7 +8,9 @@ import sys
 import emoji
 import pandas as pd
 
+from Gastepo.Core.Base.BaseData import APPLICATION_CONFIG_FILE
 from Gastepo.Core.Util.CommonUtils import get_alphabet
+from Gastepo.Core.Util.ConfigUtils import YamlConfig
 from Gastepo.Core.Util.LogUtils import logger
 
 
@@ -23,6 +25,15 @@ class PostmanTools(object):
         :param postman_collection: Postman集合文档绝对路径
         :param groups: 参数分组(默认为A组), 支持数量定义或名称列表定义
         """
+        env = YamlConfig(config=APPLICATION_CONFIG_FILE).get("postman", 2).get("active").get("env")
+        sync_url = YamlConfig(config=APPLICATION_CONFIG_FILE).get("postman", 2).get("domain").get(env)
+        url_filter = YamlConfig(config=APPLICATION_CONFIG_FILE).get("postman", 2).get("active").get("filter")
+        self.url_filter = r".*" if url_filter is None else url_filter
+        if sync_url is None:
+            logger.warning("[WARNING]：应用配置文件ApplicationConfig中未发现当前激活环境为{}的任何接口匹配地址，请检查！".format(env))
+            self.sync_url = None
+        else:
+            self.sync_url = sync_url
         if os.path.exists(postman_collection):
             with open(file=postman_collection, mode='r', encoding='utf-8') as collection:
                 postman_collection_str = emoji.demojize("".join(collection.readlines()))
@@ -78,6 +89,20 @@ class PostmanTools(object):
             return "{}"
         else:
             return input_str
+
+    def sync_url_with_environment(self, base_url):
+        """
+        同步应用配置文件中当前激活环境的接口地址
+        :param base_url: Postman中当前默认接口地址
+        :return:
+        """
+        if self.sync_url is None:
+            return base_url
+        else:
+            if re.search(self.url_filter, base_url) is not None:
+                return self.sync_url
+            else:
+                return base_url
 
     @property
     def load_collection(self):
@@ -513,7 +538,7 @@ class DirectPostmanTools(PostmanTools):
                         Project=self.postman_collection_dict["info"]["name"],
                         Scenario=fetch_scenario(item),
                         Title=item["name"],
-                        BaseUrl=fetch_base_url(item),
+                        BaseUrl=self.sync_url_with_environment(fetch_base_url(item)),
                         UrlPath="/" + "/".join(item["request"]["url"]["path"]),
                         Method=item["request"]["method"],
                         Consumes=fetch_consumes(item),
@@ -786,7 +811,7 @@ class OrganizePostmanTools(PostmanTools):
                                 Project=self.postman_collection_dict["info"]["name"],
                                 Scenario=item["name"],
                                 Title=inner_item["name"],
-                                BaseUrl=fetch_base_url(inner_item),
+                                BaseUrl=self.sync_url_with_environment(fetch_base_url(inner_item)),
                                 UrlPath="/" + "/".join(inner_item["request"]["url"]["path"]),
                                 Method=inner_item["request"]["method"],
                                 Consumes=fetch_consumes(inner_item),

@@ -52,8 +52,19 @@ rabbitmq:
     password: 123456
     virtual-host: /
 ---
+swagger:
+  stg:
+    swagger_docs: http://10.6.0.116:11014/qa/mock/open-api.json
+    domain_urls: https://qa.com
+postman:
+  domain:
+    dev: http://localhost:5002
+    stg: http://10.6.0.116:11014
+  active:
+    env: default
+    filter: ".*"
 allure:
   check_count: 5
-runner:
+testcase:
   group: A
   actice: true

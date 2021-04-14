@@ -481,7 +481,7 @@ def runner_config():
     must_list = ['id', 'scenario', 'platform', 'level', 'group', 'order', 'active']
     runner_config_dict = {}
     check_flag = False
-    config_dict = YamlConfig(config=APPLICATION_CONFIG_FILE).get('runner', 2)
+    config_dict = YamlConfig(config=APPLICATION_CONFIG_FILE).get('testcase', 2)
     if config_dict is None:
         return dict(id=[], scenario=[], platform=[], level=[], group=[], order=[], active=True)
     else:

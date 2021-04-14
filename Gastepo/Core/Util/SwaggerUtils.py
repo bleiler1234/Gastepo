@@ -7,7 +7,7 @@ import sys
 import pandas as pd
 import requests
 
-from Gastepo.Core.Base.BaseData import ENVIRONMENT_CONFIG_FILE
+from Gastepo.Core.Base.BaseData import APPLICATION_CONFIG_FILE
 from Gastepo.Core.Util.ConfigUtils import YamlConfig
 from Gastepo.Core.Util.LogUtils import logger
 
@@ -175,14 +175,13 @@ class EnvironmentSwaggerTools(SwaggerTools):
     Swagger爬取工具类(依赖环境配置文件)
     """
 
-    def __init__(self, project, env, domain=True):
+    def __init__(self, env, domain=True):
         """
         根据环境配置初始化Swagger接口文档。
-        :param project: 项目名称
         :param env: 项目环境
         :param domain: 域名替换开关(默认开启)
         """
-        env_params = YamlConfig(config=ENVIRONMENT_CONFIG_FILE).get(project).get(env)
+        env_params = YamlConfig(config=APPLICATION_CONFIG_FILE).get("swagger", 2).get(env)
         swagger_doc_urls = env_params.get("swagger_docs")
         if domain is True:
             domain_urls = env_params.get("domain_urls")
@@ -232,5 +231,5 @@ class EnvironmentSwaggerTools(SwaggerTools):
 if __name__ == '__main__':
     from Gastepo.Core.Base.BaseData import TESTCASE_PATH
 
-    EnvironmentSwaggerTools(project="hospital", env="stg", domain=True).get_swagger_to_excel(
+    EnvironmentSwaggerTools(env="stg", domain=True).get_swagger_to_excel(
         os.path.join(TESTCASE_PATH, "SwaggerApiDocs_stg.xls"))

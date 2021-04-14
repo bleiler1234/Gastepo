@@ -1669,13 +1669,13 @@ if __name__ == '__main__':
     from Gastepo.Core.Util.CommonUtils import force_to_json, unicode_to_normal
 
     df = DataframeOperation(
-        test_case_file="/Users/mayer/project/PycharmProjects/Gastepo/TestSuite/TestCase/ApiTestCase_stg.xls")
+        test_case_file="/Users/mayer/Project/PycharmProjects/Automation/Gastepo/Gastepo/TestSuite/TestCase/ApiTestCase_stg.xls")
     test_case = df.get_entire_data_to_dict(id=['TC_1', 'TC_2', 'TC_4'], check_active=True)
 
     response_dict = {}
     for case in test_case:
         session = SuperTestCaseRequestTool(case, response_dict)
-        response = session.dispatch_request(header={}, param={}, data={})
+        response = session.dispatch_request(header={}, param={}, data={}, path={})
         headers = session.fetch_request_dict.get("headers")
         params = session.fetch_request_dict.get("params")
         response_dict[case["UrlPath"]] = force_to_json(
