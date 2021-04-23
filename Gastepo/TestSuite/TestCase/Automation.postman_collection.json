@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "04d37055-418c-4b7d-8e23-e47a4e14e06c",
+		"_postman_id": "f2355551-146d-4e2f-87a6-7ff4e09ec123",
 		"name": "Automation",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -68,7 +68,7 @@
 						"header": [
 							{
 								"key": "id",
-								"value": "3",
+								"value": "9",
 								"type": "text"
 							},
 							{
@@ -97,6 +97,46 @@
 				},
 				{
 					"name": "path01",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"[",
+									"    {",
+									"        \"to_path\": {",
+									"            \"$['name']\": \"mayer\",",
+									"            \"$['id']\": 8",
+									"        },",
+									"        \"to_header\": {},",
+									"        \"to_param\": {},",
+									"        \"to_data\": {}",
+									"    }",
+									"]"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"[",
+									"    {",
+									"        \"actual\": \"$.code\",",
+									"        \"expect\":[100],",
+									"        \"matcher\":\"has_item\",",
+									"        \"alert\":\"fail\"",
+									"    }",
+									"]"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [
@@ -106,8 +146,12 @@
 								"type": "text"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"url": {
-							"raw": "http://10.6.0.116:11014/mock/path01/mayer/test/1?group=g1",
+							"raw": "http://10.6.0.116:11014/mock/path01/{name}/test/{id}?group=g1",
 							"protocol": "http",
 							"host": [
 								"10",
@@ -119,9 +163,9 @@
 							"path": [
 								"mock",
 								"path01",
-								"mayer",
+								"{name}",
 								"test",
-								"1"
+								"{id}"
 							],
 							"query": [
 								{
@@ -135,6 +179,24 @@
 				},
 				{
 					"name": "get01",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"[",
+									"    {",
+									"        \"actual\": \"$.code\",",
+									"        \"expect\":[100],",
+									"        \"matcher\":\"has_item\",",
+									"        \"alert\":\"fail\"",
+									"    }",
+									"]"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -145,7 +207,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://10.6.0.116:11014/mock/get01?id=5",
+							"raw": "http://10.6.0.116:11014/mock/get01?id=2",
 							"protocol": "http",
 							"host": [
 								"10",
@@ -161,7 +223,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "5"
+									"value": "2"
 								}
 							]
 						}
@@ -210,36 +272,6 @@
 							"path": [
 								"mock",
 								"post01"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "java_get_xml",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/xml",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://10.6.0.116:11014/api/test/get_xml",
-							"protocol": "http",
-							"host": [
-								"10",
-								"6",
-								"0",
-								"116"
-							],
-							"port": "11014",
-							"path": [
-								"api",
-								"test",
-								"get_xml"
 							]
 						}
 					},
@@ -495,7 +527,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://10.6.0.116:11014/mock/complex01/path?q1=param1",
+							"raw": "http://10.6.0.116:11014/mock/complex01/path?q1=11",
 							"protocol": "http",
 							"host": [
 								"10",
@@ -512,7 +544,7 @@
 							"query": [
 								{
 									"key": "q1",
-									"value": "param1"
+									"value": "11"
 								}
 							]
 						}
@@ -532,7 +564,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"id\": 1,\n    \"name\": \"mayer\"\n}",
+							"raw": "{\n    \"id\": 11,\n    \"name\": \"mayer\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -559,6 +591,132 @@
 				},
 				{
 					"name": "post02",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"[",
+									"    {",
+									"        \"to_path\": {},",
+									"        \"to_header\": {},",
+									"        \"to_param\": {},",
+									"        \"to_data\": {",
+									"            \"$[0]['id']\": {",
+									"                \"/mock/get01\": {",
+									"                    \"request\": {",
+									"                        \"param\": {",
+									"                            \"${str(a)}\": {",
+									"                                \"a\": {",
+									"                                    \"/mock/path01/{name}/test/{id}\": {",
+									"                                        \"response\": {",
+									"                                            \"data\": \"$.data.id\"",
+									"                                        }",
+									"                                    }",
+									"                                }",
+									"                            }",
+									"                        }",
+									"                    }",
+									"                }",
+									"            }",
+									"        }",
+									"    }",
+									"]"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"[",
+									"    {",
+									"        \"actual\": [\"8\", \"2\"],",
+									"        \"expect\": [{",
+									"            \"${str(a)}\": {",
+									"                \"a\": {",
+									"                    \"${str(a)}\": {",
+									"                        \"a\": {",
+									"                            \"/mock/get01\": {",
+									"                                \"request\": {",
+									"                                    \"param\": \"$.id\"",
+									"                                }",
+									"                            }",
+									"                        }",
+									"                    }",
+									"                }",
+									"            }",
+									"        }],",
+									"        \"matcher\": \"is_not(has_item)\",",
+									"        \"alert\": \"actual0 fail\",",
+									"        \"multi\": false",
+									"    },",
+									"    {",
+									"        \"actual\": {",
+									"            \"${str(a)}\": {",
+									"                \"a\": {",
+									"                    \"/mock/get_xml01\": {",
+									"                        \"response\": {",
+									"                            \"data\": \"$.qa.history.id\"",
+									"                        }",
+									"                    }",
+									"                }",
+									"            }",
+									"        },",
+									"        \"expect\": [\"1\"],",
+									"        \"matcher\": \"has_item\",",
+									"        \"alert\": \"actual1 fail\",",
+									"        \"multi\": true",
+									"    },",
+									"    {",
+									"        \"actual\": {",
+									"            \"self\": {",
+									"                \"response\": {",
+									"                    \"data\": \"$.code\"",
+									"                }",
+									"            }",
+									"        },",
+									"        \"expect\": [100],",
+									"        \"matcher\": \"has_item\",",
+									"        \"alert\": \"actual2 fail\",",
+									"        \"multi\": false",
+									"    },",
+									"    {",
+									"        \"actual\": {",
+									"            \"self\": {",
+									"                \"request\": {",
+									"                    \"data\": \"$.[0].id\"",
+									"                },",
+									"                \"response\": {",
+									"                    \"data\": \"$.code\"",
+									"                }",
+									"            }",
+									"        },",
+									"        \"expect\": [8],",
+									"        \"matcher\": \"has_item\",",
+									"        \"alert\": \"actual3 fail\",",
+									"        \"multi\": true",
+									"    },",
+									"    {",
+									"        \"actual\": {",
+									"            \"self\": {",
+									"                \"response\": {",
+									"                    \"status_code\": \"$.status_code\"",
+									"                }",
+									"            }",
+									"        },",
+									"        \"expect\": [200],",
+									"        \"matcher\": \"has_item\",",
+									"        \"alert\": \"actual4 fail\",",
+									"        \"multi\": false",
+									"    }",
+									"]"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -570,7 +728,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "[\n    {\n        \"id\": 1,\n        \"name\": \"mayer\"\n    }\n]",
+							"raw": "[\n    {\n        \"id\": 3,\n        \"name\": \"mayer\"\n    }\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -590,45 +748,6 @@
 							"path": [
 								"mock",
 								"post02"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "java_post_xml",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/xml",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "<MESSAGE TEACHER_ID=\"3\">\n    <TEACHER_NAME>ter1</TEACHER_NAME>\n    <STUDENT_LIST>\n        <STUDENT STUDENT_ID=\"1\">\n            <STUDENT_NAME>stu1</STUDENT_NAME>\n            <STUDENT_SEX>m</STUDENT_SEX>\n        </STUDENT>\n        <STUDENT STUDENT_ID=\"2\">\n            <STUDENT_NAME>stu2</STUDENT_NAME>\n            <STUDENT_SEX>f</STUDENT_SEX>\n        </STUDENT>\n    </STUDENT_LIST>\n</MESSAGE>",
-							"options": {
-								"raw": {
-									"language": "xml"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://10.6.0.116:11014/api/test/post_xml",
-							"protocol": "http",
-							"host": [
-								"10",
-								"6",
-								"0",
-								"116"
-							],
-							"port": "11014",
-							"path": [
-								"api",
-								"test",
-								"post_xml"
 							]
 						}
 					},

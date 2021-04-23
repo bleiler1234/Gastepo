@@ -1,28 +1,33 @@
 ### Description
 
-> **框架简介：** Gastepo ~ 基于Schema DSL的E2E接口自动化测试框架
+> **框架简介：** Gastepo ~ 基于Schema DSL语法规约的接口自动化测试框架
 
-> **测试类型：** E2E接口自动化测试
+> **测试类型：** 接口自动化测试
 
 ***
 
 ### Feature
 
-* **语言版本**：*Python 3.7*
-* **集成IDE**：*PyCharm*
-* **主要工具**：
-  * 请求工具：*Requests*
-  * 用例工具：*Pandas*
+* **开发语言**：*Python 3.7*
+* **开发环境**：*PyCharm*
+* **开发工具**：
   * 测试框架：*Pytest*
   * 测试报告：*Allure*
-  * 提取工具：*JsonPath*
+  * 数据处理：*Pandas*
+  * 请求工具：*Requests*
+  * 响应获取：*JsonPath*
   * 断言工具：*Hamcrest*
-  * Web服务：*Flask*
-  * Mock服务：*FastApi*
-  * APM监控：*SkyWalking-H2*
-* **部署方式**：*Docker*、*Jenkins Pipeline*、*Ubuntu VM*、*Local*
+  * Web服务：*Flask*、*FastApi*
+  * 容器服务：*Docker*
 
 ***
+
+### Framework
+
+![Framework.png](https://i.loli.net/2021/04/23/ZwBVLu4hyCXrkqI.png)
+
+***
+
 
 ### Schema
 
@@ -36,22 +41,41 @@
             "to_header": {},
             "to_param": {},
             "to_data": {
-                "$['idCardNo']": "$.data[?(@.id==2001453)].idCard"
+                "$['idCardNo']": {
+                  	"/v3_0/getCardId": {
+                      	"response": {
+                          "data": "$.data.cardId"
+                        }
+                    }
+                }
             }
         }
     }
 ]
 ```
 
-- *Assert Schema*
+- *Assertion Schema*
 
 ```json
 [
     {
-        "actual": "$.data[:].id",
-        "expect": [2001453],
-        "matcher": "has_items",
-        "alert": "未发现指定ID"
+        "actual": "$.data[:].cardId",
+        "expect": [
+          {
+            "${fetchCardId(user)}": {
+              "user": {
+                "/v3_0/getUserName": {
+                  	"response": {
+                      "data": "$.userName"
+                    }
+                }
+              }
+            }
+          }
+        ],
+        "matcher": "has_item",
+        "alert": "未发现指定用户标签ID",
+        "multi": false
     }
 ]
 ```
@@ -62,22 +86,23 @@
 
 ```ini
 [pytest]
-addopts = -s -q --alluredir=./Output/Result/Allure --disable-warnings
-testpaths = ./TestSuite/TestMain
+addopts = -s -q --alluredir=./Common/Static/Result/Allure --disable-warnings
+testpaths = ./Executor/Mente
 python_files = *Runner.py
 python_classes = Test*
 python_functions = test*
 ```
 
 - **Auto Runtime**
-  - *Step_1*：通过爬虫方式获取Swagger及Postman接口信息后自动合并生成测试用例。
-  - *Step_2*：自动化测试用例支持全量或分组执行，单条用例支持激活或禁用。
-  - *Step_3*：自动化测试用例使用Dependency Schema数据结构的接口间数据依赖。
-  - *Step_4*：测试运行前自动清空Allure测试报告历史信息，并支持清空自动化测试用例上次运行痕迹。
-  - *Step_5*：测试运行期间所有接口请求支持dispatch路由分发，可自动识别匹配接口请求方式。
-  - *Step_6*：测试断言使用Assert Schema数据结构，其为JsonPath结合Hamcrest方式的自定义高级断言。
-  - *Step_7*：测试结果统计使用Allure图形化测试报告，并支持自动更新用例执行结果。
-  - *Step_8*：测试通知方式支持传统邮件推送和钉钉机器人消息提醒。
+    - *Step_1*：自动分析指定扫描文件夹中所有Postman接口集合并聚合生成表格用例文件。
+    - *Step_2*：自动化测试用例支持用例筛选及BDD方式执行，单条用例支持激活或禁用。
+    - *Step_3*：自动化测试用例使用Dependency Schema规约结构的接口请求数据依赖。
+    - *Step_4*：自动化测试用例使用Assertion Schema规约结构的接口信息高级断言。
+    - *Step_5*：自动化测试运行支持前置清空历史测试数据，包括测试结果、用例结果等。
+    - *Step_6*：自动化测试运行的所有接口通过dispatch路由分发，可自动识别请求信息并注入依赖数据。
+    - *Step_7*：自动化测试报告使用Allure，并支持表格用例自动更新、接口信息实时录制、报告实时截图。
+    - *Step_8*：自动化测试推送通知方式支持传统邮件推送和钉钉机器人消息提醒。
+    - *Step_9*：自动化测试部署方式支持Jenkins流水线及Docker容器托管运行方式。
 
 ***
 
@@ -89,28 +114,58 @@ allure generate {json测试结果目录} -o {html测试报告目录} --clean
 
 - <u>**Allure Test Report**</u>
 
-![Allure测试报告](https://git.tasly.com/mente/api_business_automation/raw/develop/Common/Static/Doc/Allure.png)
+![Allure测试报告](https://i.loli.net/2021/04/22/9XmosLQtigcSv34.png)
 
 ***
 
 ### Test Deployment
 
-- <u>**docker container**</u>
+- <u>**Docker Container**</u>
 
 ```shell
-docker run --name gastepo -itd -p 5000:5000 -v {配置文件映射卷} -v {数据文件映射卷} gastepo:v0.0.1
+docker run -itd --name gastepo -p 端口号 -v {配置文件映射卷} -v {数据文件映射卷} automation/gastepo
+```
+
+- <u>**Jenkins Pipeline**</u>
+
+```groovy
+pipeline {
+    agent any
+    options {
+        可选项配置
+    }
+    stages {
+         stage("Pull From GitLab") {
+        		拉取指定Git分支源码
+        }
+        stage("Set PATH") {
+            设置Python3依赖信息
+        }
+        stage("Run Test") {
+            执行自动化测试
+        }
+        stage("Generate Report") {
+            报告生成及结果推送
+    }
+    post {
+        success {
+            println "[Done]: Gastepo Test Done"
+        }
+    }
+}
 ```
 
 ***
 
 ### Wiki:
 
-[Gastepo Wiki](http://10.6.0.116:11110)
+Get me on [GitHub](https://github.com/bleiler1234/gastepo)
 
 ***
 
 ### Measure
 
-[![警报](http://10.16.168.61:9005/api/project_badges/measure?project=Gastepo&metric=alert_status)](http://10.16.168.61:9005/dashboard?id=Gastepo)[![SQALE评级](http://10.16.168.61:9005/api/project_badges/measure?project=Gastepo&metric=sqale_rating)](http://10.16.168.61:9005/dashboard?id=Gastepo)[![覆盖率](http://10.16.168.61:9005/api/project_badges/measure?project=Gastepo&metric=coverage)](http://10.16.168.61:9005/dashboard?id=Gastepo)
+[![警报](http://10.16.168.70:9005/api/project_badges/measure?project=TaslyAutoTest&metric=alert_status)](http://10.16.168.70:9005/dashboard?id=TaslyAutoTest)[![SQALE评级](http://10.16.168.70:9005/api/project_badges/measure?project=TaslyAutoTest&metric=sqale_rating)](http://10.16.168.70:9005/dashboard?id=TaslyAutoTest)[![覆盖率](http://10.16.168.70:9005/api/project_badges/measure?project=TaslyAutoTest&metric=coverage)](http://10.16.168.70:9005/dashboard?id=TaslyAutoTest)
 
 [^QA]: 583512498@qq.com
+

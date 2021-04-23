@@ -29,6 +29,9 @@ RESULT_PATH = os.path.join(OUTPUT_PATH, "Result")
 # ------------ 测试报告路径 -----------
 REPORT_PATH = os.path.join(OUTPUT_PATH, "Report")
 
+# ------------ 接口录制路径 -----------
+RECORD_PATH = os.path.join(OUTPUT_PATH, "Record")
+
 # ------------ 框架日志路径 -----------
 LOG_PATH = os.path.join(OUTPUT_PATH, 'Log')
 

@@ -40,6 +40,7 @@ class FUNCTION_ENUM(Enum):
     INT = {"name": "int", "role": "系统", "description": "转换为整数", "example": 'int(2.4)'}
     FLOAT = {"name": "float", "role": "系统", "description": "转换为浮点数", "example": 'float(2)'}
     STR = {"name": "str", "role": "系统", "description": "转换为字符串", "example": 'str(1.4)'}
+    REPR = {"name": "repr", "role": "系统", "description": "转换为字符串（解释器模式）", "example": 'repr(1.4)'}
     SUBSTR = {"name": "substr", "role": "框架", "description": "截取字符串", "example": 'substr("abcde",1,3,1)'}
     COMBINE_STR = {"name": "combine_str", "role": "框架", "description": "合并字符串", "example": 'combine_str("I am ", "yu")'}
     DUPLICATE = {"name": "duplicate", "role": "框架", "description": "集合去重", "example": 'duplicate([1,2,2])'}

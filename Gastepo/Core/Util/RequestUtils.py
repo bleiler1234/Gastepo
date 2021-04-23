@@ -9,7 +9,7 @@ from jsonpath import jsonpath
 from Gastepo.Core.Base.CustomException import InvalidConsumesError
 from Gastepo.Core.Extend.AssertDependencyExtends import *
 from Gastepo.Core.Util.CommonUtils import emoji_to_str
-from Gastepo.Core.Util.CommonUtils import param_to_dict, value_by_type, xml_to_json, json_to_xml
+from Gastepo.Core.Util.CommonUtils import param_to_dict, value_by_type, xml_to_json, json_to_xml, force_to_json
 from Gastepo.Core.Util.LogUtils import logger
 
 # 全局Session
@@ -169,7 +169,7 @@ class SimpleTestCaseRequestTool(RequestTool):
         :param consumes: 请求头类型
         :return: 请求body
         """
-        consume = str(consumes).lower()
+        consume = str(consumes).lower().split(r";")[0].strip()
         try:
             if consume not in ["application/x-www-form-urlencoded", "application/json", "*/*"]:
                 raise InvalidConsumesError
@@ -417,7 +417,7 @@ class SingletonTestCaseRequestTool(RequestTool):
         :param kw: 额外请求体信息
         :return: data
         """
-        consume = str(consumes).lower()
+        consume = str(consumes).lower().split(r";")[0].strip()
         try:
             if consume not in ["application/x-www-form-urlencoded", "application/json", "*/*"]:
                 raise InvalidConsumesError
@@ -448,7 +448,7 @@ class SingletonTestCaseRequestTool(RequestTool):
                             data = ""
                         return data
                     if isinstance(request_data, list):
-                        logger.warning('[WARNING]：当前请求体为列表形式，不支持kw形式的请求体外部参数扩展！')
+                        logger.warning('[WARNING]：注意：当前请求体为列表形式，不支持kw形式的请求体外部参数扩展！')
                         data = json.dumps(request_data)
                         return data
                 else:
@@ -694,7 +694,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
                         for req_dict_expression, res_jsonpath_expression in depend["to_path"].items():
                             req_dict_value = str(req_dict_expression).replace("$", "request_path")
                             if self.realtime_dependency.__contains__(url):
-                                res_jsonpath_value = jsonpath(self.realtime_dependency.get(url),
+                                res_jsonpath_value = jsonpath(self.realtime_dependency[url]["response"]["data"],
                                                               res_jsonpath_expression)
                                 if res_jsonpath_value is False:
                                     logger.warning(
@@ -727,7 +727,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
                         for req_dict_expression, res_jsonpath_expression in depend["to_header"].items():
                             req_dict_value = str(req_dict_expression).replace("$", "request_header")
                             if self.realtime_dependency.__contains__(url):
-                                res_jsonpath_value = jsonpath(self.realtime_dependency.get(url),
+                                res_jsonpath_value = jsonpath(self.realtime_dependency[url]["response"]["data"],
                                                               res_jsonpath_expression)
                                 if res_jsonpath_value is False:
                                     logger.warning(
@@ -759,7 +759,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
                         for req_dict_expression, res_jsonpath_expression in depend["to_param"].items():
                             req_dict_value = str(req_dict_expression).replace("$", "request_param")
                             if self.realtime_dependency.__contains__(url):
-                                res_jsonpath_value = jsonpath(self.realtime_dependency.get(url),
+                                res_jsonpath_value = jsonpath(self.realtime_dependency[url]["response"]["data"],
                                                               res_jsonpath_expression)
                                 if res_jsonpath_value is False:
                                     logger.warning(
@@ -791,7 +791,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
                         for req_dict_expression, res_jsonpath_expression in depend["to_data"].items():
                             req_dict_value = str(req_dict_expression).replace("$", "request_data")
                             if self.realtime_dependency.__contains__(url):
-                                res_jsonpath_value = jsonpath(self.realtime_dependency.get(url),
+                                res_jsonpath_value = jsonpath(self.realtime_dependency[url]["response"]["data"],
                                                               res_jsonpath_expression)
                                 if res_jsonpath_value is False:
                                     logger.warning(
@@ -825,6 +825,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
         :param kw: 额外请求路径信息，字典Update注意键相同，后边会覆盖前边
         :return: paths
         """
+        kw = force_to_json(json.dumps(kw, ensure_ascii=False))
         try:
             if kw == {}:
                 paths = self.mapping_path(self.test_case["RequestPath"])
@@ -848,6 +849,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
         :param kw: 额外请求头信息，字典Update注意键相同，后边会覆盖前边
         :return: headers
         """
+        kw = force_to_json(json.dumps(kw, ensure_ascii=False))
         try:
             if kw == {}:
                 headers = {"Content-Type": "{};charset=UTF-8".format(self.test_case["Consumes"])}
@@ -877,6 +879,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
         :param kw: 额外请求参数信息
         :return: param
         """
+        kw = force_to_json(json.dumps(kw, ensure_ascii=False))
         try:
             if kw == {}:
                 request_param = self.mapping_param(self.test_case["RequestParam"])
@@ -903,7 +906,8 @@ class AdvanceTestCaseRequestTool(RequestTool):
         :param kw: 额外请求体信息
         :return: data
         """
-        consume = str(consumes).lower()
+        kw = force_to_json(json.dumps(kw, ensure_ascii=False))
+        consume = str(consumes).lower().split(r";")[0].strip()
         try:
             if consume not in ["multipart/form-data", "application/x-www-form-urlencoded", "application/xml",
                                "application/json", "*/*"]:
@@ -994,7 +998,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
                         self.request_dict["datas"] = data
                         return data
                     if isinstance(request_data, list):
-                        logger.warning('[WARNING]：当前请求体为列表形式，不支持kw形式的请求体外部参数扩展！')
+                        logger.warning('[WARNING]：注意：当前请求体为列表形式，不支持kw形式的请求体外部参数扩展！')
                         mapping_data = self.mapping_dependency(data=True)
                         if mapping_data == {}:
                             data = json.dumps(request_data)
@@ -1024,7 +1028,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
         :param consumes: 请求头类型
         :return: files
         """
-        consume = str(consumes).lower()
+        consume = str(consumes).lower().split(r";")[0].strip()
         try:
             if consume != "multipart/form-data":
                 return None
@@ -1220,8 +1224,9 @@ class AdvanceTestCaseRequestTool(RequestTool):
 
 class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
     """
-    测试用例HTTP(S)请求工具类 ~ 支持请求扩展及多种依赖，如常量、类SpEL表达式、接口依赖及函数依赖表达式。
-    描述：该工具类支持path/header/param/data请求扩展，同时支持以上形式数据依赖。
+    测试用例HTTP(S)请求工具类 ~ 支持请求扩展及多种依赖形式，如常量、类SpEL表达式、JsonPath表达式、接口依赖表达式及函数依赖表达式。
+    描述：1、该工具类支持path/header/param/data的请求依赖，主要使用如上的数据依赖方式。
+         2、当使用基于接口依赖表达式的请求扩展时，支持从被依赖接口的请求path/header/param/data及响应header/data处获取依赖数据。
     """
 
     def __init__(self, test_case_schema=None, realtime_dependency=None, global_session=False):
@@ -1255,7 +1260,9 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
                     for req_dict_expression, dependency_expression in to_path_dict.items():
                         req_dict_value = str(req_dict_expression).replace("$", "request_path")
                         expression_value = self.expr_identity(param_expr=dependency_expression, maintainer="请求路径")
-                        if expression_value not in ["Missing Dependency Url", "JsonPath Value is False"]:
+                        if expression_value not in ["Missing Dependency Url", "Missing Dependency Function",
+                                                    "Catching Dependency Fail",
+                                                    "Checking Dependency Invalid"]:
                             # 因为总是使用字符串替换路径参数变量，所以无需使用value_by_type同步类型。
                             if isinstance(expression_value, str):
                                 expression_value = "".join(["'", expression_value, "'"])
@@ -1275,7 +1282,9 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
                     for req_dict_expression, dependency_expression in to_header_dict.items():
                         req_dict_value = str(req_dict_expression).replace("$", "request_header")
                         expression_value = self.expr_identity(param_expr=dependency_expression, maintainer="请求头")
-                        if expression_value not in ["Missing Dependency Url", "JsonPath Value is False"]:
+                        if expression_value not in ["Missing Dependency Url", "Missing Dependency Function",
+                                                    "Catching Dependency Fail",
+                                                    "Checking Dependency Invalid"]:
                             expression_value = value_by_type(eval(req_dict_value), expression_value)
                             if isinstance(expression_value, str):
                                 expression_value = "".join(["'", expression_value, "'"])
@@ -1295,7 +1304,9 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
                     for req_dict_expression, dependency_expression in to_param_dict.items():
                         req_dict_value = str(req_dict_expression).replace("$", "request_param")
                         expression_value = self.expr_identity(param_expr=dependency_expression, maintainer="请求参数")
-                        if expression_value not in ["Missing Dependency Url", "JsonPath Value is False"]:
+                        if expression_value not in ["Missing Dependency Url", "Missing Dependency Function",
+                                                    "Catching Dependency Fail",
+                                                    "Checking Dependency Invalid"]:
                             expression_value = value_by_type(eval(req_dict_value), expression_value)
                             if isinstance(expression_value, str):
                                 expression_value = "".join(["'", expression_value, "'"])
@@ -1315,7 +1326,9 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
                     for req_dict_expression, dependency_expression in to_data_dict.items():
                         req_dict_value = str(req_dict_expression).replace("$", "request_data")
                         expression_value = self.expr_identity(param_expr=dependency_expression, maintainer="请求体")
-                        if expression_value not in ["Missing Dependency Url", "JsonPath Value is False"]:
+                        if expression_value not in ["Missing Dependency Url", "Missing Dependency Function",
+                                                    "Catching Dependency Fail",
+                                                    "Checking Dependency Invalid"]:
                             expression_value = value_by_type(eval(req_dict_value), expression_value)
                             if isinstance(expression_value, str):
                                 expression_value = "".join(["'", expression_value, "'"])
@@ -1338,6 +1351,7 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
         :param kw: 额外请求路径信息，字典Update注意键相同，后边会覆盖前边
         :return: paths
         """
+        kw = force_to_json(json.dumps(kw, ensure_ascii=False))
         try:
             if kw == {}:
                 paths = self.mapping_path(self.test_case["RequestPath"])
@@ -1361,6 +1375,7 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
         :param kw: 额外请求头信息，字典Update注意键相同，后边会覆盖前边
         :return: headers
         """
+        kw = force_to_json(json.dumps(kw, ensure_ascii=False))
         try:
             if kw == {}:
                 headers = {"Content-Type": "{};charset=UTF-8".format(self.test_case["Consumes"])}
@@ -1390,6 +1405,7 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
         :param kw: 额外请求参数信息
         :return: param
         """
+        kw = force_to_json(json.dumps(kw, ensure_ascii=False))
         try:
             if kw == {}:
                 request_param = self.mapping_param(self.test_case["RequestParam"])
@@ -1416,7 +1432,8 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
         :param kw: 额外请求体信息
         :return: data
         """
-        consume = str(consumes).lower()
+        kw = force_to_json(json.dumps(kw, ensure_ascii=False))
+        consume = str(consumes).lower().split(r";")[0].strip()
         try:
             if consume not in ["multipart/form-data", "application/x-www-form-urlencoded", "application/xml",
                                "application/json", "*/*"]:
@@ -1507,7 +1524,7 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
                         self.request_dict["datas"] = data
                         return data
                     if isinstance(request_data, list):
-                        logger.warning('[WARNING]：当前请求体为列表形式，不支持kw形式的请求体外部参数扩展！')
+                        logger.warning('[WARNING]：注意：当前请求体为列表形式，不支持kw形式的请求体外部参数扩展！')
                         mapping_data = self.mapping_dependencies(data=True)
                         if mapping_data == {}:
                             data = json.dumps(request_data)
@@ -1531,24 +1548,36 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
         except Exception:
             logger.exception("扩展请求体过程中发生异常，请检查！")
 
-    def expr_identity(self, param_expr, maintainer):
+    def expr_identity(self, param_expr, maintainer, origin_data=None):
         """
         解析数据依赖表达式并求值
         :param param_expr: 数据依赖表达式
         :param maintainer: 调用者名称
+        :param origin_data: 待取值字典（仅jsonpath模式时使用）
         :return:
         """
-        if re.match(r'^\$\{.*\}$', str(param_expr)):
+        if re.match(r'^\$\..*', str(param_expr)):
+            if origin_data is None:
+                logger.warning(
+                    "[WARNING]：【{}数据依赖】检测到当前待jsonpath取值的初始字典为None，请检查！[注意字典赋值表达式及函数依赖表达式不支持jsonpath方式]".format(
+                        maintainer))
+                return "Checking Dependency Invalid"
+            value = jsonpath(origin_data, param_expr)
+            result = value[0] if value is not False else False
+            if result is False:
+                logger.warning('[WARNING]：【{}数据依赖】数据依赖jsonpath表达式"{}"当前未匹配到任何值，请检查！'.format(maintainer, param_expr))
+            return emoji_to_str(result)
+        elif re.match(r'^\$\{.*\}$', str(param_expr)):
             expr = param_expr[2:-1]
             result = eval(expr)
             if result is None:
-                logger.warning('[WARNING]：【{}数据依赖】数据依赖求值表达式"{}"当前所求值为None，请检查！'.format(maintainer, param_expr))
+                logger.warning('[WARNING]：【{}数据依赖】数据依赖类SpEL表达式"{}"当前所求值为None，请检查！'.format(maintainer, param_expr))
                 self.dependency_fail_identity(maintainer)
             return emoji_to_str(result)
         elif isinstance(param_expr, dict):
             for key, value in param_expr.items():
                 if re.match(r'^/{1}.+', key):
-                    return emoji_to_str(self.schema_dependency(maintainer=maintainer, expr_key=key, expr_value=value))
+                    return emoji_to_str(self.schema_url(maintainer=maintainer, expr_key=key, expr_value=value))
                 elif re.match(r'^\$\{.*\}$', key):
                     return emoji_to_str(self.schema_function(maintainer=maintainer, expr_key=key, expr_value=value))
                 else:
@@ -1559,44 +1588,143 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
         else:
             return emoji_to_str(param_expr)
 
-    def schema_dependency(self, maintainer, expr_key, expr_value):
+    def schema_url(self, maintainer, expr_key, expr_value):
         """
-        接口依赖处理
+        接口依赖表达式处理
         :param maintainer: 调用者名称
-        :param expr_key: 接口依赖Url
-        :param expr_value: jsonpath表达式
+        :param expr_key: 接口依赖地址
+        :param expr_value: 接口依赖Schema
         :return:
         """
         url = str(expr_key).strip()
-        depend_jsonpath_expression = str(expr_value).strip()
         if self.realtime_dependency.__contains__(url):
-            depend_jsonpath_value = jsonpath(self.realtime_dependency.get(url),
-                                             depend_jsonpath_expression)
-            if depend_jsonpath_value is False:
-                logger.warning(
-                    '[WARNING]：【{}接口依赖】依赖接口"{}"响应数据的jsonPath表达式"{}"未匹配到任何值，请检查依赖接口响应或jsonPath表达式是否正确！'.format(
-                        maintainer,
-                        url,
-                        depend_jsonpath_expression))
-                self.dependency_fail_identity(maintainer)
-                return "JsonPath Value is False"
+            if isinstance(expr_value, str):
+                depend_jsonpath_expression = str(expr_value).strip()
+                depend_jsonpath_value = jsonpath(self.realtime_dependency[url]['response']['data'],
+                                                 depend_jsonpath_expression)
+                if depend_jsonpath_value is False:
+                    logger.warning(
+                        '[WARNING]：【{}接口依赖】依赖接口"{}"响应数据的jsonPath表达式"{}"未匹配到任何值，请检查依赖接口响应或jsonPath表达式是否正确！'.format(
+                            maintainer,
+                            url,
+                            depend_jsonpath_expression))
+                    self.dependency_fail_identity(maintainer)
+                    return "Catching Dependency Fail"
+                else:
+                    depend_jsonpath_value = depend_jsonpath_value[0]
+                    logger.info(
+                        '[Dependency]：【{}接口依赖】{}完成一次依赖接口"{}"的响应体期望数据替换，jsonPath表达式为"{}"，获取期望值为{}.'.format(
+                            maintainer, maintainer, url, depend_jsonpath_expression, depend_jsonpath_value))
+                    return emoji_to_str(depend_jsonpath_value)
+            elif isinstance(expr_value, dict) and expr_value != dict():
+                if set(list(expr_value.keys())) <= {"request", "response"}:
+                    if expr_value.__contains__("request"):
+                        if isinstance(expr_value["request"], dict) and expr_value["request"] != dict():
+                            if set(list(expr_value["request"].keys())) <= {"path", "header", "param", "data"}:
+                                if expr_value["request"].__contains__("path"):
+                                    return_value = self.expr_identity(
+                                        origin_data=self.realtime_dependency[url]["request"]["path"],
+                                        param_expr=expr_value['request']['path'],
+                                        maintainer=maintainer)
+                                    logger.info(
+                                        '[Dependency]：【{}接口依赖】{}完成一次依赖接口"{}"的请求路径期望数据替换，获取期望值为{}.'.format(
+                                            maintainer, maintainer, url, return_value))
+                                    return return_value
+                                elif expr_value["request"].__contains__("header"):
+                                    return_value = self.expr_identity(
+                                        origin_data=self.realtime_dependency[url]["request"]["header"],
+                                        param_expr=expr_value['request']['header'],
+                                        maintainer=maintainer)
+                                    logger.info(
+                                        '[Dependency]：【{}接口依赖】{}完成一次依赖接口"{}"的请求头期望数据替换，获取期望值为{}.'.format(
+                                            maintainer, maintainer, url, return_value))
+                                    return return_value
+                                elif expr_value["request"].__contains__("param"):
+                                    return_value = self.expr_identity(
+                                        origin_data=self.realtime_dependency[url]["request"]["param"],
+                                        param_expr=expr_value['request']['param'],
+                                        maintainer=maintainer)
+                                    logger.info(
+                                        '[Dependency]：【{}接口依赖】{}完成一次依赖接口"{}"的请求参数期望数据替换，获取期望值为{}.'.format(
+                                            maintainer, maintainer, url, return_value))
+                                    return return_value
+                                elif expr_value["request"].__contains__("data"):
+                                    return_value = self.expr_identity(
+                                        origin_data=self.realtime_dependency[url]["request"]["data"],
+                                        param_expr=expr_value['request']['data'],
+                                        maintainer=maintainer)
+                                    logger.info(
+                                        '[Dependency]：【{}接口依赖】{}完成一次依赖接口"{}"的请求体期望数据替换，获取期望值为{}.'.format(
+                                            maintainer, maintainer, url, return_value))
+                                    return return_value
+                                else:
+                                    pass
+                            else:
+                                logger.warning(
+                                    '[WARNING]：【{}接口依赖】依赖接口"{}"的字典表达式request键值当前仅支持path、header、param、data，请检查！'.format(
+                                        maintainer, url))
+                                self.dependency_fail_identity(maintainer)
+                                return "Catching Dependency Fail"
+                        else:
+                            logger.warning(
+                                '[WARNING]：【{}接口依赖】依赖接口"{}"的字典表达式request键值类型必须为字典形式且不能为空，请检查！'.format(maintainer, url))
+                            self.dependency_fail_identity(maintainer)
+                            return "Catching Dependency Fail"
+                    elif expr_value.__contains__("response"):
+                        if isinstance(expr_value["response"], dict) and expr_value["response"] != dict():
+                            if set(list(expr_value["response"].keys())) <= {"header", "data"}:
+                                if expr_value["response"].__contains__("header"):
+                                    return_value = self.expr_identity(
+                                        origin_data=self.realtime_dependency[url]["response"]["header"],
+                                        param_expr=expr_value['response']['header'],
+                                        maintainer=maintainer)
+                                    logger.info(
+                                        '[Dependency]：【{}接口依赖】{}完成一次依赖接口"{}"的响应头期望数据替换，获取期望值为{}.'.format(
+                                            maintainer, maintainer, url, return_value))
+                                    return return_value
+                                elif expr_value["response"].__contains__("data"):
+                                    return_value = self.expr_identity(
+                                        origin_data=self.realtime_dependency[url]["response"]["data"],
+                                        param_expr=expr_value['response']['data'],
+                                        maintainer=maintainer)
+                                    logger.info(
+                                        '[Dependency]：【{}接口依赖】{}完成一次依赖接口"{}"的响应体期望数据替换，获取期望值为{}.'.format(
+                                            maintainer, maintainer, url, return_value))
+                                    return return_value
+                                else:
+                                    pass
+                            else:
+                                logger.warning(
+                                    '[WARNING]：【{}接口依赖】依赖接口"{}"的字典表达式response键值当前仅支持header、data，请检查！'.format(
+                                        maintainer, url))
+                                self.dependency_fail_identity(maintainer)
+                                return "Catching Dependency Fail"
+                        else:
+                            logger.warning(
+                                '[WARNING]：【{}接口依赖】依赖接口"{}"的字典表达式response键值类型必须为字典形式且不能为空，请检查！'.format(maintainer, url))
+                            self.dependency_fail_identity(maintainer)
+                            return "Catching Dependency Fail"
+                    else:
+                        pass
+                else:
+                    logger.warning('[WARNING]：【{}接口依赖】依赖接口"{}"的字典表达式键名必须为request或response，请检查！'.format(maintainer, url))
+                    self.dependency_fail_identity(maintainer)
+                    return "Catching Dependency Fail"
             else:
-                depend_jsonpath_value = depend_jsonpath_value[0]
-                logger.info(
-                    '[Dependency]：【{}接口依赖】{}完成一次依赖接口"{}"的响应体期望数据替换，jsonPath表达式为"{}"，获取期望值为{}.'.format(
-                        maintainer, maintainer, url, depend_jsonpath_expression, depend_jsonpath_value))
-                return emoji_to_str(depend_jsonpath_value)
+                logger.warning('[WARNING]：【{}接口依赖】依赖接口"{}"未匹配到任何合法赋值规则，请指定str或非空dict形式的赋值规则！'.format(maintainer, url))
+                self.dependency_fail_identity(maintainer)
+                return "Catching Dependency Fail"
         else:
-            logger.warning('[WARNING]：【{}接口依赖】当前接口响应缓存字典中不存在依赖接口"{}"的任何响应数据！'.format(maintainer, url))
+            logger.warning('[WARNING]：【{}接口依赖】当前接口信息缓存字典中不存在依赖接口"{}"的任何接口信息！'.format(maintainer, url))
             self.dependency_fail_identity(maintainer)
             return "Missing Dependency Url"
 
     def schema_function(self, maintainer, expr_key, expr_value):
         """
-        函数依赖处理
+        函数依赖表达式处理
         :param maintainer: 调用者名称
-        :param expr_key: 函数接口表达式
-        :param expr_value: 函数入参dict
+        :param expr_key: 函数名称标识符
+        :param expr_value: 函数依赖Schema
         :return:
         """
         function_expr = expr_key[2:-1]
@@ -1629,18 +1757,22 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
                             '[WARNING]：【{}函数依赖】当前接口预期表达式中依赖函数"{}"由于参数赋值存在缺失，将忽略此函数依赖！'.format(
                                 maintainer, function_name))
                         self.dependency_fail_identity(maintainer)
+                        return "Catching Dependency Fail"
                 else:
                     logger.warning(
                         '[WARNING]：【{}函数依赖】当前接口预期表达式中调用的依赖函数"{}"传值入参形式必须为字典结构，请检查！'.format(maintainer, function_name))
                     self.dependency_fail_identity(maintainer)
+                    return "Catching Dependency Fail"
             else:
                 logger.warning(
                     '[WARNING]：【{}函数依赖】当前接口预期表达式中调用的依赖函数"{}"调用方式存在错误，请检查其是否合法！'.format(maintainer, function_name))
                 self.dependency_fail_identity(maintainer)
+                return "Catching Dependency Fail"
         else:
             logger.warning(
                 '[WARNING]：【{}函数依赖】当前接口预期表达式中指定的依赖函数"{}"暂未支持，请检查或追加！'.format(maintainer, function_name))
             self.dependency_fail_identity(maintainer)
+            return "Missing Dependency Function"
 
     def dependency_fail_identity(self, maintainer):
         """

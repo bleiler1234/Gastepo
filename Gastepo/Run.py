@@ -14,7 +14,7 @@ def main():
         target=pipe_command,
         name="ServerThread",
         args=("python3 {}".format(os.path.join(SERVER_PATH, "MainServer.py")),),
-        daemon=True
+        daemon=False
     ).start()
     pytest.main()
 

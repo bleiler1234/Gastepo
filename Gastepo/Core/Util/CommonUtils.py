@@ -170,7 +170,7 @@ def pipe_command(command):
         windows_command = ['cmd', '/c']
         command_detail_list = re.split(r"[ ]+", command)
         windows_command.extend(command_detail_list)
-        subprocess.Popen(windows_command, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.Popen(windows_command, shell=False, creationflags=subprocess.CREATE_NEW_CONSOLE)
     else:
         raise SystemOSTypeError
 
@@ -187,14 +187,41 @@ def unicode_to_normal(origin_str):
 
 def param_to_dict(request_param):
     """
-    转换请求参数为dict形式, 如a=1&b=2转换为{"a":1, "b":2}
+    转换请求参数为字典形式, 如a=1&b=2转换为{"a":1, "b":2}
     :param request_param: 请求参数
     :return: dict
     """
+    if str(request_param).strip() == "":
+        return {}
     param_zip_list = [tuple([i.strip() for i in re.split(r"[=]+", param.strip())]) for param in
                       re.split(r"[&]+", request_param)]
     param_dict = dict(param_zip_list)
     return param_dict
+
+
+def body_to_dict(consumes, request_body):
+    """
+    根据consumes将请求体统一转换为字典形式
+    :param consumes: 请求类型
+    :param request_body: 请求体
+    :return:
+    """
+    consume = str(consumes).lower().split(r';')[0].strip()
+    if consume not in ["multipart/form-data", "application/x-www-form-urlencoded", "application/xml",
+                       "application/json", "*/*"]:
+        return request_body
+    if str(request_body).strip() == "":
+        return {}
+    if consume == "multipart/form-data":
+        return request_body
+    elif consume == "application/x-www-form-urlencoded":
+        return param_to_dict(request_body)
+    elif consume == "application/xml":
+        return json.loads(xml_to_json(request_body))
+    elif consume == "application/json" or consume == "*/*":
+        return json.loads(request_body)
+    else:
+        return request_body
 
 
 def xml_to_json(xml_str):
@@ -203,6 +230,8 @@ def xml_to_json(xml_str):
     :param xml_str: XML字符串
     :return:
     """
+    if str(xml_str).strip() == "":
+        return "{}"
     xml_str = re.split(pattern=r'<\?[\s\S]*\?>', string=str(xml_str).strip(), maxsplit=1)[-1]
     xml_parse = xmltodict.parse(xml_str)
     json_str = json.dumps(xml_parse, indent=1)

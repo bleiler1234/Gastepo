@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import json
-import re
 
 from hamcrest import *
 from jsonpath import jsonpath
 
-from Gastepo.Core.Base.CustomException import FlakyTestCaseError
 from Gastepo.Core.Base.BaseData import MATCHER_TYPE
+from Gastepo.Core.Base.CustomException import FlakyTestCaseError
 from Gastepo.Core.Extend.AssertDependencyExtends import *
 from Gastepo.Core.Extend.HamcrestCustomExtends import *
+from Gastepo.Core.Util.CommonUtils import emoji_to_str
 from Gastepo.Core.Util.CommonUtils import value_by_type
 from Gastepo.Core.Util.LogUtils import logger
-from Gastepo.Core.Util.CommonUtils import emoji_to_str
 
 
 class AssertionTools(object):
@@ -146,45 +145,401 @@ class AdvanceAssertionTools(AssertionTools):
         except Exception:
             logger.exception("测试用例test_case_schema及测试依赖realtime_dependency必须用字典方式入参，断言原型origin_data支持字典及列表方式入参！")
 
-    def schema_dependency(self, actual, multi, expr_key, expr_value):
+    def schema_url(self, expr_key, expr_value, actual_mode, function_mode, multi):
         """
-        高级断言接口依赖处理
-        :param actual: 实际数据(用于开启是否将预期数据类型转换为实际结果数据类型(actual：开启；None：关闭))
-        :param multi: JsonPath列表结果(False：仅获取JsonPath列表结果首个值 True：获取整个JsonPath列表结果)
-        :param expr_key: 接口依赖Url
-        :param expr_value: jsonpath表达式
-        :return:
-        """
+         高级断言接口依赖处理
+         :param expr_key: 接口依赖地址
+         :param expr_value: 接口依赖Schema
+         :param actual_mode: actual识别模式开关
+         :param function_mode: 函数依赖表达式取值模式开关
+         :param multi: JsonPath取值模式开关(False：仅获取JsonPath列表结果首个值 True：获取整个JsonPath列表结果)
+         :return:
+         """
         url = str(expr_key).strip()
-        depend_jsonpath_expression = str(expr_value).strip()
+        now = str(self.test_case["UrlPath"]).strip()
         if self.realtime_dependency.__contains__(url):
-            depend_jsonpath_value = jsonpath(self.realtime_dependency.get(url),
-                                             depend_jsonpath_expression)
-            if depend_jsonpath_value is False:
-                logger.warning(
-                    '[WARNING]：【高级断言接口依赖】依赖接口"{}"响应数据的jsonPath表达式"{}"未匹配到任何值，请检查依赖接口响应或jsonPath表达式是否正确！'.format(
-                        url,
-                        depend_jsonpath_expression))
-                return False
-            else:
-                if multi is False:
-                    depend_jsonpath_value = self.sync_type_with_actual(actual, depend_jsonpath_value[0])
+            if isinstance(expr_value, str):
+                depend_jsonpath_expression = str(expr_value).strip()
+                depend_jsonpath_value = jsonpath(self.realtime_dependency[url]['response']['data'],
+                                                 depend_jsonpath_expression)
+                if function_mode:
+                    if multi:
+                        result = depend_jsonpath_value if depend_jsonpath_value is not False else False
+                    else:
+                        result = depend_jsonpath_value[0] if depend_jsonpath_value is not False else False
                 else:
-                    depend_jsonpath_value = self.sync_type_with_actual(actual, depend_jsonpath_value)
-                logger.info(
-                    '[Dependency]：【高级断言接口依赖】高级断言完成一次依赖接口"{}"的响应体期望数据替换，jsonPath表达式为"{}"，获取期望值为{}.'.format(
-                        url, depend_jsonpath_expression, depend_jsonpath_value))
-                return depend_jsonpath_value
+                    result = depend_jsonpath_value if depend_jsonpath_value is not False else False
+                if result is False:
+                    if url == now:
+                        if actual_mode:
+                            logger.warning(
+                                '[WARNING]：【高级断言自身依赖】高级断言actual中通过jsonpath表达式"{}"直接获取自身接口响应数据时未匹配到任何值，请检查依赖接口响应或jsonPath表达式是否正确！！'.format(
+                                    depend_jsonpath_expression))
+                        else:
+                            logger.warning(
+                                '[WARNING]：【高级断言自身依赖】高级断言expect中通过jsonpath表达式"{}"直接获取自身接口响应数据时未匹配到任何值，请检查依赖接口响应或jsonPath表达式是否正确！！'.format(
+                                    depend_jsonpath_expression))
+                    else:
+                        if actual_mode:
+                            logger.warning(
+                                '[WARNING]：【高级断言接口依赖】高级断言actual中通过jsonpath表达式"{}"直接获取依赖接口"{}"响应数据时未匹配到任何值，请检查依赖接口响应或jsonPath表达式是否正确！！'.format(
+                                    depend_jsonpath_expression, url))
+                        else:
+                            logger.warning(
+                                '[WARNING]：【高级断言接口依赖】高级断言expect中通过jsonpath表达式"{}"直接获取依赖接口"{}"响应数据时未匹配到任何值，请检查依赖接口响应或jsonPath表达式是否正确！！'.format(
+                                    depend_jsonpath_expression, url))
+                return result
+            elif isinstance(expr_value, dict) and expr_value != dict():
+                if set(list(expr_value.keys())) <= {"request", "response"}:
+                    if expr_value.__contains__("request"):
+                        if isinstance(expr_value["request"], dict) and expr_value["request"] != dict():
+                            if set(list(expr_value["request"].keys())) <= {"path", "header", "param", "data"}:
+                                if expr_value["request"].__contains__("path"):
+                                    return_value = self.analysis_actual(
+                                        param_expr=expr_value["request"]["path"],
+                                        origin_data=self.realtime_dependency[url]["request"]["path"],
+                                        function_mode=function_mode,
+                                        multi=multi
+                                    ) if actual_mode else self.analysis_expect(
+                                        param_expr=expr_value["request"]["path"],
+                                        origin_data=
+                                        self.realtime_dependency[url]["request"][
+                                            "path"],
+                                        function_mode=function_mode,
+                                        multi=multi)
+                                    if url == now:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言actual中完成一次自身接口请求路径的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言expect中完成一次自身接口请求路径的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                    else:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言actual中完成一次依赖接口"{}"请求路径的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言expect中完成一次依赖接口"{}"请求路径的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                    return return_value
+                                elif expr_value["request"].__contains__("header"):
+                                    return_value = self.analysis_actual(
+                                        param_expr=expr_value["request"]["header"],
+                                        origin_data=self.realtime_dependency[url]["request"][
+                                            "header"],
+                                        function_mode=function_mode,
+                                        multi=multi
+                                    ) if actual_mode else self.analysis_expect(
+                                        param_expr=expr_value["request"]["header"],
+                                        origin_data=
+                                        self.realtime_dependency[url]["request"][
+                                            "header"],
+                                        function_mode=function_mode,
+                                        multi=multi)
+                                    if url == now:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言actual中完成一次自身接口请求头的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言expect中完成一次自身接口请求头的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                    else:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言actual中完成一次依赖接口"{}"请求头的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言expect中完成一次依赖接口"{}"请求头的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                    return return_value
+                                elif expr_value["request"].__contains__("param"):
+                                    return_value = self.analysis_actual(
+                                        param_expr=expr_value["request"]["param"],
+                                        origin_data=self.realtime_dependency[url]["request"]["param"],
+                                        function_mode=function_mode,
+                                        multi=multi
+                                    ) if actual_mode else self.analysis_expect(
+                                        param_expr=expr_value["request"]["param"],
+                                        origin_data=
+                                        self.realtime_dependency[url]["request"][
+                                            "param"],
+                                        function_mode=function_mode,
+                                        multi=multi)
+                                    if url == now:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言actual中完成一次自身接口请求参数的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言expect中完成一次自身接口请求参数的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                    else:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言actual中完成一次依赖接口"{}"请求参数的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言expect中完成一次依赖接口"{}"请求参数的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                    return return_value
+                                elif expr_value["request"].__contains__("data"):
+                                    return_value = self.analysis_actual(
+                                        param_expr=expr_value["request"]["data"],
+                                        origin_data=self.realtime_dependency[url]["request"]["data"],
+                                        function_mode=function_mode,
+                                        multi=multi
+                                    ) if actual_mode else self.analysis_expect(
+                                        param_expr=expr_value["request"]["data"],
+                                        origin_data=
+                                        self.realtime_dependency[url]["request"][
+                                            "data"],
+                                        function_mode=function_mode,
+                                        multi=multi)
+                                    if url == now:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言actual中完成一次自身接口请求体的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言expect中完成一次自身接口请求体的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                    else:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言actual中完成一次依赖接口"{}"请求体的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言expect中完成一次依赖接口"{}"请求体的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                    return return_value
+                                else:
+                                    pass
+                            else:
+                                if url == now:
+                                    if actual_mode:
+                                        logger.warning(
+                                            '[WARNING]：【高级断言自身依赖】高级断言actual中获取自身接口请求信息的request表达式字典当前仅支持path、header、param、data，请检查！')
+                                    else:
+                                        logger.warning(
+                                            '[WARNING]：【高级断言自身依赖】高级断言expect中获取自身接口请求信息的request表达式字典当前仅支持path、header、param、data，请检查！')
+                                else:
+                                    if actual_mode:
+                                        logger.warning(
+                                            '[WARNING]：【高级断言接口依赖】高级断言actual中获取依赖接口"{}"请求信息的request表达式字典当前仅支持path、header、param、data，请检查！'.format(
+                                                url))
+                                    else:
+                                        logger.warning(
+                                            '[WARNING]：【高级断言接口依赖】高级断言expect中获取依赖接口"{}"请求信息的request表达式字典当前仅支持path、header、param、data，请检查！'.format(
+                                                url))
+                                return "Catching Dependency Fail" if actual_mode else ["Catching Dependency Fail"]
+                        else:
+                            if url == now:
+                                if actual_mode:
+                                    logger.warning(
+                                        '[WARNING]：【高级断言自身依赖】高级断言actual中获取自身接口请求信息的request表达式类型必须为字典形式且不能为空，请检查！')
+                                else:
+                                    logger.warning(
+                                        '[WARNING]：【高级断言自身依赖】高级断言expect中获取自身接口请求信息的request表达式类型必须为字典形式且不能为空，请检查！')
+                            else:
+                                if actual_mode:
+                                    logger.warning(
+                                        '[WARNING]：【高级断言接口依赖】高级断言actual中获取依赖接口"{}"请求信息的request表达式类型必须为字典形式且不能为空，请检查！'.format(
+                                            url))
+                                else:
+                                    logger.warning(
+                                        '[WARNING]：【高级断言接口依赖】高级断言expect中获取依赖接口"{}"请求信息的request表达式类型必须为字典形式且不能为空，请检查！'.format(
+                                            url))
+                            return "Catching Dependency Fail" if actual_mode else ["Catching Dependency Fail"]
+                    elif expr_value.__contains__("response"):
+                        if isinstance(expr_value["response"], dict) and expr_value["response"] != dict():
+                            if set(list(expr_value["response"].keys())) <= {"header", "data", "status_code"}:
+                                if expr_value["response"].__contains__("status_code"):
+                                    return_value = self.analysis_actual(
+                                        param_expr=expr_value["response"]["status_code"],
+                                        origin_data=self.realtime_dependency[url],
+                                        function_mode=function_mode,
+                                        multi=multi
+                                    ) if actual_mode else self.analysis_expect(
+                                        param_expr=expr_value["response"]["status_code"],
+                                        origin_data=self.realtime_dependency[url],
+                                        function_mode=function_mode,
+                                        multi=multi)
+                                    if url == now:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言actual中完成一次自身接口响应状态码的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言expect中完成一次自身接口响应状态码的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                    else:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言actual中完成一次依赖接口"{}"响应状态码的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言expect中完成一次依赖接口"{}"响应状态码的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                    return return_value
+                                elif expr_value["response"].__contains__("header"):
+                                    return_value = self.analysis_actual(
+                                        param_expr=expr_value["response"]["header"],
+                                        origin_data=self.realtime_dependency[url]["response"][
+                                            "header"],
+                                        function_mode=function_mode,
+                                        multi=multi
+                                    ) if actual_mode else self.analysis_expect(
+                                        param_expr=expr_value["response"]["header"],
+                                        origin_data=
+                                        self.realtime_dependency[url]["response"][
+                                            "header"],
+                                        function_mode=function_mode,
+                                        multi=multi)
+                                    if url == now:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言actual中完成一次自身接口响应头的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言expect中完成一次自身接口响应头的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                    else:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言actual中完成一次依赖接口"{}"响应头的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言expect中完成一次依赖接口"{}"响应头的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                    return return_value
+                                elif expr_value["response"].__contains__("data"):
+                                    return_value = self.analysis_actual(
+                                        param_expr=expr_value["response"]["data"],
+                                        origin_data=self.realtime_dependency[url]["response"]["data"],
+                                        function_mode=function_mode,
+                                        multi=multi
+                                    ) if actual_mode else self.analysis_expect(
+                                        param_expr=expr_value["response"]["data"],
+                                        origin_data=
+                                        self.realtime_dependency[url]["response"][
+                                            "data"],
+                                        function_mode=function_mode,
+                                        multi=multi)
+                                    if url == now:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言actual中完成一次自身接口响应体的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言自身依赖】高级断言expect中完成一次自身接口响应体的期望数据替换，获取期望值为{}.'.format(
+                                                    return_value))
+                                    else:
+                                        if actual_mode:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言actual中完成一次依赖接口"{}"响应体的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                        else:
+                                            logger.info(
+                                                '[Dependency]：【高级断言接口依赖】高级断言expect中完成一次依赖接口"{}"响应体的期望数据替换，获取期望值为{}.'.format(
+                                                    url, return_value))
+                                    return return_value
+                                else:
+                                    pass
+                            else:
+                                if url == now:
+                                    if actual_mode:
+                                        logger.warning(
+                                            '[WARNING]：【高级断言自身依赖】高级断言actual中获取自身接口响应信息的response表达式字典当前仅支持status_code、header、data，请检查！')
+                                    else:
+                                        logger.warning(
+                                            '[WARNING]：【高级断言自身依赖】高级断言expect中获取自身接口响应信息的response表达式字典当前仅支持status_code、header、data，请检查！')
+                                else:
+                                    if actual_mode:
+                                        logger.warning(
+                                            '[WARNING]：【高级断言接口依赖】高级断言actual中获取依赖接口"{}"响应信息的response表达式字典当前仅支持status_code、header、data，请检查！'.format(
+                                                url))
+                                    else:
+                                        logger.warning(
+                                            '[WARNING]：【高级断言接口依赖】高级断言expect中获取依赖接口"{}"响应信息的response表达式字典当前仅支持status_code、header、data，请检查！'.format(
+                                                url))
+                                return "Catching Dependency Fail" if actual_mode else ["Catching Dependency Fail"]
+                        else:
+                            if url == now:
+                                if actual_mode:
+                                    logger.warning(
+                                        '[WARNING]：【高级断言自身依赖】高级断言actual中获取自身接口响应信息的response表达式类型必须为字典形式且不能为空，请检查！')
+                                else:
+                                    logger.warning(
+                                        '[WARNING]：【高级断言自身依赖】高级断言expect中获取自身接口响应信息的response表达式类型必须为字典形式且不能为空，请检查！')
+                            else:
+                                if actual_mode:
+                                    logger.warning(
+                                        '[WARNING]：【高级断言接口依赖】高级断言actual中获取依赖接口"{}"响应信息的response表达式类型必须为字典形式且不能为空，请检查！'.format(
+                                            url))
+                                else:
+                                    logger.warning(
+                                        '[WARNING]：【高级断言接口依赖】高级断言expect中获取依赖接口"{}"响应信息的response表达式类型必须为字典形式且不能为空，请检查！'.format(
+                                            url))
+                            return "Catching Dependency Fail" if actual_mode else ["Catching Dependency Fail"]
+                    else:
+                        pass
+                else:
+                    if url == now:
+                        if actual_mode:
+                            logger.warning(
+                                '[WARNING]：【高级断言自身依赖】高级断言actual中自身接口的字典表达式键名必须为request或response，请检查！')
+                        else:
+                            logger.warning(
+                                '[WARNING]：【高级断言自身依赖】高级断言expect中自身接口的字典表达式键名必须为request或response，请检查！')
+                    else:
+                        if actual_mode:
+                            logger.warning(
+                                '[WARNING]：【高级断言接口依赖】高级断言actual中依赖接口"{}"的字典表达式键名必须为request或response，请检查！'.format(url))
+                        else:
+                            logger.warning(
+                                '[WARNING]：【高级断言接口依赖】高级断言expect中依赖接口"{}"的字典表达式键名必须为request或response，请检查！'.format(url))
+                    return "Catching Dependency Fail" if actual_mode else ["Catching Dependency Fail"]
+            else:
+                if url == now:
+                    if actual_mode:
+                        logger.warning('[WARNING]：【高级断言自身依赖】高级断言actual中自身接口未匹配到任何合法赋值规则，请指定str或非空dict形式的赋值规则！')
+                    else:
+                        logger.warning('[WARNING]：【高级断言自身依赖】高级断言expect中自身接口未匹配到任何合法赋值规则，请指定str或非空dict形式的赋值规则！')
+                else:
+                    if actual_mode:
+                        logger.warning(
+                            '[WARNING]：【高级断言接口依赖】高级断言actual中依赖接口"{}"未匹配到任何合法赋值规则，请指定str或非空dict形式的赋值规则！'.format(url))
+                    else:
+                        logger.warning(
+                            '[WARNING]：【高级断言接口依赖】高级断言expect中依赖接口"{}"未匹配到任何合法赋值规则，请指定str或非空dict形式的赋值规则！'.format(url))
+                return "Catching Dependency Fail" if actual_mode else ["Catching Dependency Fail"]
         else:
-            logger.warning('[WARNING]：【高级断言接口依赖】当前接口响应缓存字典中不存在高级断言依赖接口"{}"的任何响应数据！'.format(url))
+            logger.warning('[WARNING]：【高级断言接口依赖】当前接口信息缓存字典中不存在当前自身接口"{}"的任何接口信息！'.format(url))
+            return "Missing Dependency Url" if actual_mode else ["Missing Dependency Url"]
 
-    def schema_function(self, actual, multi, expr_key, expr_value):
+    def schema_function(self, expr_key, expr_value, actual_mode, multi):
         """
         高级断言函数依赖处理
-        :param actual: 实际数据(用于开启是否将预期数据类型转换为实际结果数据类型(actual：开启；None：关闭))
-        :param multi: JsonPath列表结果(False：仅获取JsonPath列表结果首个值 True：获取整个JsonPath列表结果)
-        :param expr_key: 函数接口表达式
-        :param expr_value: 函数入参dict
+        :param expr_key: 函数名称标识符
+        :param expr_value: 函数依赖Schema
+        :param actual_mode: actual识别模式开关
+        :param multi: JsonPath取值模式开关(False：仅获取JsonPath列表结果首个值 True：获取整个JsonPath列表结果)
         :return:
         """
         function_expr = expr_key[2:-1]
@@ -197,89 +552,190 @@ class AdvanceAssertionTools(AssertionTools):
                     param_value_list = []
                     for param in param_list:
                         if expr_value.__contains__(param):
-                            param_value_list.append(self.expr_identity(expr_value[param], multi=multi))
+                            param_value_list.append(
+                                self.analysis_actual(param_expr=expr_value[param], origin_data=self.origin_data,
+                                                     function_mode=True, multi=multi) if actual_mode else
+                                self.analysis_expect(param_expr=expr_value[param], origin_data=self.origin_data,
+                                                     function_mode=True, multi=multi))
                         else:
-                            logger.warning(
-                                '[WARNING]：【高级断言函数依赖】当前接口预期表达式中依赖函数"{}"的参数"{}"不存在于赋值字典中，请检查！'.format(
-                                    function_name, param))
+                            if actual_mode:
+                                logger.warning(
+                                    '[WARNING]：【高级断言函数依赖】高级断言actual中依赖函数"{}"的参数"{}"不存在于赋值字典中，请检查！'.format(
+                                        function_name, param))
+                            else:
+                                logger.warning(
+                                    '[WARNING]：【高级断言函数依赖】高级断言expect中依赖函数"{}"的参数"{}"不存在于赋值字典中，请检查！'.format(
+                                        function_name, param))
                             break
                     if param_value_list.__len__() == param_list.__len__():
                         eval_expr = function_name + tuple(param_value_list).__str__()
                         eval_expr_value = eval(eval_expr)
-                        logger.info(
-                            '[Dependency]：【高级断言函数依赖】高级断言完成一次依赖函数"{}"的返回值期望数据替换，依赖函数表达式为"{}"，获取期望值为{}.'.format(
-                                function_name, eval_expr, eval_expr_value))
-                        eval_expr_value = self.sync_type_with_actual(actual, eval_expr_value)
+                        if actual_mode:
+                            logger.info(
+                                '[Dependency]：【高级断言函数依赖】高级断言actual中完成一次依赖函数"{}"的返回值期望数据替换，依赖函数表达式为"{}"，获取期望值为{}.'.format(
+                                    function_name, eval_expr, eval_expr_value))
+                        else:
+                            logger.info(
+                                '[Dependency]：【高级断言函数依赖】高级断言expect中完成一次依赖函数"{}"的返回值期望数据替换，依赖函数表达式为"{}"，获取期望值为{}.'.format(
+                                    function_name, eval_expr, eval_expr_value))
                         return eval_expr_value
                     else:
+                        if actual_mode:
+                            logger.warning(
+                                '[WARNING]：【高级断言函数依赖】高级断言actual中依赖函数"{}"由于参数赋值存在缺失，将忽略此函数依赖！'.format(
+                                    function_name))
+                        else:
+                            logger.warning(
+                                '[WARNING]：【高级断言函数依赖】高级断言expect中依赖函数"{}"由于参数赋值存在缺失，将忽略此函数依赖！'.format(
+                                    function_name))
+                        return "Catching Dependency Fail" if actual_mode else ["Catching Dependency Fail"]
+                else:
+                    if actual_mode:
                         logger.warning(
-                            '[WARNING]：【高级断言函数依赖】当前接口预期表达式中依赖函数"{}"由于参数赋值存在缺失，将忽略此函数依赖！'.format(
+                            '[WARNING]：【高级断言函数依赖】高级断言actual中依赖函数"{}"的传值入参形式必须为字典结构，请检查！'.format(
                                 function_name))
+                    else:
+                        logger.warning(
+                            '[WARNING]：【高级断言函数依赖】高级断言expect中依赖函数"{}"的传值入参形式必须为字典结构，请检查！'.format(
+                                function_name))
+                    return "Catching Dependency Fail" if actual_mode else ["Catching Dependency Fail"]
+            else:
+                if actual_mode:
+                    logger.warning(
+                        '[WARNING]：【高级断言函数依赖】高级断言actual中依赖函数"{}"的函数调用方式存在错误，请检查其是否合法！'.format(
+                            function_name))
                 else:
                     logger.warning(
-                        '[WARNING]：【高级断言函数依赖】当前接口预期表达式中调用的依赖函数"{}"传值入参形式必须为字典结构，请检查！'.format(
+                        '[WARNING]：【高级断言函数依赖】高级断言expect中依赖函数"{}"的函数调用方式存在错误，请检查其是否合法！'.format(
                             function_name))
+                return "Catching Dependency Fail" if actual_mode else ["Catching Dependency Fail"]
+        else:
+            if actual_mode:
+                logger.warning(
+                    '[WARNING]：【高级断言函数依赖】高级断言actual中依赖函数"{}"暂未支持，请检查或追加！'.format(function_name))
             else:
                 logger.warning(
-                    '[WARNING]：【高级断言函数依赖】当前接口预期表达式中调用的依赖函数"{}"调用方式存在错误，请检查其是否合法！'.format(
-                        function_name))
-        else:
-            logger.warning(
-                '[WARNING]：【高级断言函数依赖】当前接口预期表达式中指定的依赖函数"{}"暂未支持，请检查或追加！'.format(function_name))
+                    '[WARNING]：【高级断言函数依赖】高级断言expect中依赖函数"{}"暂未支持，请检查或追加！'.format(function_name))
+            return "Missing Dependency Function" if actual_mode else ["Missing Dependency Function"]
 
-    def expr_identity(self, param_expr, fetch_actual=False, multi=False):
+    def analysis_actual(self, param_expr, origin_data, function_mode=False, multi=False):
         """
-        解析数据依赖表达式并求值
+        actual数据依赖解析处理
         :param param_expr: 数据依赖表达式
-        :param fetch_actual: 当前是否正在识别actual实际结果(True: 当前识别actual)
-        :param multi: JsonPath列表结果(False：仅获取JsonPath列表结果首个值 True：获取整个JsonPath列表结果)
+        :param origin_data: 待取值字典（仅jsonpath模式时使用）
+        :param function_mode: 函数依赖表达式取值模式开关
+        :param multi: JsonPath取值模式开关(False：仅获取JsonPath列表结果首个值 True：获取整个JsonPath列表结果)
         :return:
         """
-        if re.match(r'^\$\..*', str(param_expr)):
-            value = jsonpath(self.origin_data, param_expr)
-            if fetch_actual is True:
+        if not function_mode:
+            if re.match(r'^\$\..*', str(param_expr)):
+                value = jsonpath(origin_data, param_expr)
                 result = value if value is not False else False
+                if result is False:
+                    logger.warning('[WARNING]：高级断言actual中获取数据的jsonpath表达式"{}"当前未匹配到任何值，请检查！'.format(param_expr))
+                return result
+            elif re.match(r'^\$\{.*\}$', str(param_expr)):
+                expr = param_expr[2:-1]
+                result = eval(expr)
+                if result is None:
+                    logger.warning('[WARNING]：高级断言actual中获取数据的类SpEL表达式"{}"当前所求值为None，请检查！'.format(param_expr))
+                return result
+            elif isinstance(param_expr, dict):
+                for key, value in param_expr.items():
+                    if re.match(r'(^self$)', key):
+                        return self.schema_url(expr_key=self.test_case["UrlPath"],
+                                               expr_value=value, actual_mode=True,
+                                               function_mode=function_mode, multi=multi)
+                    elif re.match(r'^/{1}.+', key):
+                        return self.schema_url(expr_key=key, expr_value=value, actual_mode=True,
+                                               function_mode=function_mode, multi=multi)
+                    elif re.match(r'^\$\{.*\}$', key):
+                        return self.schema_function(expr_key=key, expr_value=value, actual_mode=True, multi=multi)
+                    else:
+                        pass
+                logger.warning(
+                    '[WARNING]：【高级断言数据依赖】高级断言actual中指定的字典形式表达式"{}"当前未匹配到任何已有字典规则(当前字典规则支持自身接口依赖、外部接口依赖及注册函数依赖)，请检查！'.format(
+                        param_expr))
+                return "Invalid Dictionary Schema"
             else:
-                if multi is True:
+                return param_expr
+        else:
+            if re.match(r'^\$\..*', str(param_expr)):
+                value = jsonpath(origin_data, param_expr)
+                if multi:
                     result = value if value is not False else False
                 else:
                     result = value[0] if value is not False else False
+                if result is False:
+                    logger.warning('[WARNING]：高级断言actual中获取数据的jsonpath表达式"{}"当前未匹配到任何值，请检查！'.format(param_expr))
+                return result
+            elif re.match(r'^\$\{.*\}$', str(param_expr)):
+                expr = param_expr[2:-1]
+                result = eval(expr)
+                if result is None:
+                    logger.warning('[WARNING]：高级断言actual中获取数据的类SpEL表达式"{}"当前所求值为None，请检查！'.format(param_expr))
+                return result
+            elif isinstance(param_expr, dict):
+                for key, value in param_expr.items():
+                    if re.match(r'(^self$)', key):
+                        return self.schema_url(expr_key=self.test_case["UrlPath"],
+                                               expr_value=value, actual_mode=True,
+                                               function_mode=True, multi=multi)
+                    elif re.match(r'^/{1}.+', key):
+                        return self.schema_url(expr_key=key, expr_value=value, actual_mode=True,
+                                               function_mode=True, multi=multi)
+                    elif re.match(r'^\$\{.*\}$', key):
+                        return self.schema_function(expr_key=key, expr_value=value, actual_mode=True, multi=multi)
+                    else:
+                        pass
+                logger.warning(
+                    '[WARNING]：【高级断言数据依赖】高级断言actual中指定的字典形式表达式"{}"当前未匹配到任何已有字典规则(当前字典规则支持自身接口依赖、外部接口依赖及注册函数依赖)，请检查！'.format(
+                        param_expr))
+                return "Invalid Dictionary Schema"
+            else:
+                return param_expr
+
+    def analysis_expect(self, param_expr, origin_data, function_mode=False, multi=False):
+        """
+        expect数据依赖解析处理
+        :param param_expr: 数据依赖表达式
+        :param origin_data: 待取值字典（仅jsonpath模式时使用）
+        :param function_mode: 函数依赖表达式取值模式开关（expect依赖表达式暂时不启用）
+        :param multi: JsonPath取值模式开关(False：仅获取JsonPath列表结果首个值 True：获取整个JsonPath列表结果)
+        :return:
+        """
+        if re.match(r'^\$\..*', str(param_expr)):
+            value = jsonpath(origin_data, param_expr)
+            if multi:
+                result = value if value is not False else False
+            else:
+                result = value[0] if value is not False else False
             if result is False:
-                if fetch_actual is False:
-                    logger.warning('[WARNING]：【高级断言数据依赖】数据依赖jsonpath表达式"{}"当前未匹配到任何值，请检查！'.format(param_expr))
-                else:
-                    logger.warning('[WARNING]：高级断言中获取actual实际数据的jsonpath表达式"{}"当前未匹配到任何值，请检查！'.format(param_expr))
+                logger.warning('[WARNING]：高级断言expect中获取数据的jsonpath表达式"{}"当前未匹配到任何值，请检查！'.format(param_expr))
             return result
         elif re.match(r'^\$\{.*\}$', str(param_expr)):
             expr = param_expr[2:-1]
             result = eval(expr)
             if result is None:
-                if fetch_actual is False:
-                    logger.warning('[WARNING]：【高级断言数据依赖】数据依赖求值表达式"{}"当前所求值为None，请检查！'.format(param_expr))
-                else:
-                    logger.warning('[WARNING]：高级断言中获取actual实际数据的求值表达式"{}"当前所求值为None，请检查！'.format(param_expr))
+                logger.warning('[WARNING]：高级断言expect中获取数据的类SpEL表达式"{}"当前所求值为None，请检查！'.format(param_expr))
             return result
         elif isinstance(param_expr, dict):
-            # if fetch_actual is True:
-            #     actual_value_list = []
-            #     for key, value in param_expr.items():
-            #         if re.match(r'^/{1}.+', key):
-            #             actual_value_list.append(self.schema_dependency(actual=None, expr_key=key, expr_value=value))
-            #         elif re.match(r'^\$\{.*\}$', key):
-            #             actual_value_list.append(self.schema_function(actual=None, expr_key=key, expr_value=value))
-            #         else:
-            #             pass
-            #     return actual_value_list
-            # else:
             for key, value in param_expr.items():
-                if re.match(r'^/{1}.+', key):
-                    return self.schema_dependency(actual=None, multi=multi, expr_key=key, expr_value=value)
+                if re.match(r'(^self$)', key):
+                    return self.schema_url(expr_key=self.test_case["UrlPath"],
+                                           expr_value=value, actual_mode=False,
+                                           function_mode=True, multi=multi)
+                elif re.match(r'^/{1}.+', key):
+                    return self.schema_url(expr_key=key, expr_value=value, actual_mode=False,
+                                           function_mode=True, multi=multi)
                 elif re.match(r'^\$\{.*\}$', key):
-                    return self.schema_function(actual=None, multi=multi, expr_key=key, expr_value=value)
+                    return self.schema_function(expr_key=key, expr_value=value, actual_mode=False, multi=multi)
                 else:
                     pass
             logger.warning(
-                '[WARNING]：【高级断言数据依赖】数据依赖字典表达式{}当前未匹配到任何字典规则(字典规则当前支持接口依赖及函数依赖)，请检查！'.format(param_expr))
+                '[WARNING]：【高级断言数据依赖】高级断言expect中指定的字典形式表达式"{}"当前未匹配到任何已有字典规则(当前字典规则支持自身接口依赖、外部接口依赖及注册函数依赖)，请检查！'.format(
+                    param_expr))
+            return ["Invalid Dictionary Schema"]
         else:
             return param_expr
 
@@ -315,49 +771,6 @@ class AdvanceAssertionTools(AssertionTools):
             result = sync_value
             return result
 
-    def check_expect(self, expect, actual, multi):
-        """
-        检查期望数据类型并返回处理结果, 扩展支持接口依赖及函数依赖的期望值
-        :param actual: 实际数据(用于开启是否将预期数据类型转换为实际结果数据类型(actual：开启；None：关闭))
-        :param multi: JsonPath列表结果(False：仅获取JsonPath列表结果首个值 True：获取整个JsonPath列表结果)
-        :param expect: 期望数据
-        :return:
-        """
-        realtime_expect = []
-        if isinstance(expect, list) and expect.__len__() != 0:
-            expect_data = expect[0]
-            if isinstance(expect_data, dict):
-                for expr_key, expr_value in expect_data.items():
-                    if re.match(r'^/{1}.+', expr_key):
-                        realtime_expect.append(
-                            self.schema_dependency(actual=actual, multi=multi, expr_key=expr_key,
-                                                   expr_value=expr_value))
-                    elif re.match(r'^\$\{.*\}$', expr_key):
-                        realtime_expect.append(
-                            self.schema_function(actual=actual, multi=multi, expr_key=expr_key, expr_value=expr_value))
-                    else:
-                        pass
-                return realtime_expect
-            elif re.match(r'^\$\..*', str(expect_data)):
-                value = jsonpath(self.origin_data, expect_data)
-                if multi is True:
-                    result = self.sync_type_with_actual(actual=actual,
-                                                        sync_value=value if value is not False else False)
-                else:
-                    result = self.sync_type_with_actual(actual=actual,
-                                                        sync_value=value[0] if value is not False else False)
-                return [result]
-            elif re.match(r'^\$\{.*\}$', str(expect_data)):
-                expr = expect_data[2:-1]
-                result = self.sync_type_with_actual(actual=actual, sync_value=eval(expr))
-                return [result]
-            else:
-                expect = self.sync_type_with_actual(actual=actual, sync_value=expect)
-                return expect
-        else:
-            logger.warning('[WARNING]：断言信息中expect期望值表达式"{}"必须以列表方式指定且不能为空, 请检查并修改！'.format(expect))
-            return expect
-
     def sample_assert(self, **err_info):
         """
         基础断言检查,仅断言响应码err和响应体errmsg
@@ -370,7 +783,7 @@ class AdvanceAssertionTools(AssertionTools):
             raise FlakyTestCaseError(msg="当前基础断言未设置任何检查信息")
         else:
             logger.info("[Checking]：[{}]~[{}]开启基础断言检查......".format(self.test_case["ID"], self.test_case["Title"]))
-            for key, value in err_info.items():
+            for key, value in {emoji_to_str(x): emoji_to_str(y) for x, y in err_info.items()}.items():
                 if self.origin_data.__contains__(str(key)):
                     assert_that(self.origin_data[str(key)], is_(equal_to(value)), "{}不匹配！".format(str(key)))
                 else:
@@ -384,20 +797,30 @@ class AdvanceAssertionTools(AssertionTools):
         :param err_info: 基本响应信息, 如响应码、响应描述等
         :return:
         """
+        expect_vars = None
         if self.test_case["AssertInfo"] == "":
             logger.warning(
                 '[WARNING]：测试用例[{}]~[{}]中未设置任何断言表达式，默认仅启用基础断言！'.format(self.test_case["ID"], self.test_case["Title"]))
             self.sample_assert(**err_info)
         else:
-            logger.info("[Checking]：开启高级断言检查......")
             for assert_dict in json.loads(self.test_case["AssertInfo"]):
+                logger.info("[Checking]：开启高级断言检测......")
                 if assert_dict.__contains__("multi"):
                     multi_flag = True if assert_dict.get("multi") is True else False
                 else:
                     multi_flag = False
                 assert_dict["multi"] = multi_flag
-                match_result = emoji_to_str(self.expr_identity(assert_dict.get("actual"), fetch_actual=True, multi=multi_flag))
-                expect_vars = emoji_to_str(self.check_expect(actual=None, multi=multi_flag, expect=assert_dict.get("expect")))
+                match_result = emoji_to_str(
+                    self.analysis_actual(param_expr=assert_dict.get("actual"), origin_data=self.origin_data,
+                                         multi=multi_flag))
+                if isinstance(assert_dict.get("expect"), list) and assert_dict.get("expect").__len__() != 0:
+                    expect_vars = emoji_to_str(
+                        [self.analysis_expect(param_expr=assert_dict.get("expect")[0], origin_data=self.origin_data,
+                                              multi=multi_flag)])
+                else:
+                    logger.warning(
+                        '[WARNING]：高级断言中expect数据依赖表达式"{}"必须以列表方式指定且不能为空, 请检查并修改！'.format(assert_dict.get("expect")))
+                    expect_vars = ["" if assert_dict.get("expect") == [] else assert_dict.get("expect")]
                 if expect_vars == []:
                     expect_vars = [""]
                 invalid_matchers = self.check_matcher_type(matcher_info=assert_dict.get("matcher"))
@@ -414,9 +837,10 @@ class AdvanceAssertionTools(AssertionTools):
                                 is_(eval(
                                     self.combine_matcher(matcher_expr=assert_dict.get("matcher"), params=expect_vars))),
                                 assert_dict.get("alert"))
+                    logger.info("[Pass]：当前高级断言检测通过.")
             logger.info(
-                "[End]：[{}]~[{}]高级断言检测合法，断言成功.".format(self.test_case["ID"],
-                                                       self.test_case["Title"]))
+                "[Success]：[{}]~[{}]全部高级断言检测完毕，所有高级断言均运行通过.".format(self.test_case["ID"],
+                                                                    self.test_case["Title"]))
 
 
 if __name__ == '__main__':

@@ -61,10 +61,11 @@ postman:
     dev: http://localhost:5002
     stg: http://10.6.0.116:11014
   active:
-    env: default
+    env: stg
     filter: ".*"
 allure:
   check_count: 5
 testcase:
   group: A
   actice: true
+  id: TC_1,TC_4,TC_11,TC_3

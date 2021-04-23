@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import json
 import os
 import re
@@ -8,9 +9,9 @@ import allure
 import pytest
 from allure_commons.types import LinkType
 
-from Gastepo.Core.Base.BaseData import TESTCASE_PATH
+from Gastepo.Core.Base.BaseData import TESTCASE_PATH, RECORD_PATH
 from Gastepo.Core.Util.AssertionUtils import AdvanceAssertionTools
-from Gastepo.Core.Util.CommonUtils import force_to_json, unicode_to_normal, runner_config
+from Gastepo.Core.Util.CommonUtils import force_to_json, unicode_to_normal, runner_config, param_to_dict, body_to_dict
 from Gastepo.Core.Util.DataFrameUtils import DataframeOperation
 from Gastepo.Core.Util.LogUtils import logger
 from Gastepo.Core.Util.PostmanUtils import AggregatePostmanTools
@@ -42,8 +43,8 @@ class TestBusinessOperationApi(object):
         测试用例初始化，如用例结果重置、获取请求token等
         :return:
         """
-        # 接口响应缓存字典
-        self.REALTIME_RESPONSE_DICT = {}
+        # 接口信息缓存字典
+        self.REALTIME_API_DICT = {}
         self.ender = UpdateTestCaseTool(test_case=TEST_CASE)
         # 清空测试用例历史执行信息
         self.ender.testcase_result_clear()
@@ -101,11 +102,24 @@ class TestBusinessOperationApi(object):
                                                                                 test_case["Platform"],
                                                                                 test_case["Title"]))
             token = get_token(test_case["Platform"])
-            session = SuperTestCaseRequestTool(test_case, self.REALTIME_RESPONSE_DICT, global_session=True)
+            session = SuperTestCaseRequestTool(test_case, self.REALTIME_API_DICT, global_session=True)
             response = session.dispatch_request(path={}, header={}, param={}, data={})
             headers = session.fetch_request_dict.get("headers")
+            paths = session.fetch_request_dict.get("paths")
             params = session.fetch_request_dict.get("params")
-            self.REALTIME_RESPONSE_DICT[test_case["UrlPath"]] = force_to_json(response.text)
+            datas = session.fetch_request_dict.get("datas")
+            self.REALTIME_API_DICT[test_case["UrlPath"]] = dict(request=dict(path={}, header={}, param={}, data={}),
+                                                                response=dict(header={}, data={}))
+            self.REALTIME_API_DICT[test_case["UrlPath"]]["request"]["path"] = {} if paths == "" else paths
+            self.REALTIME_API_DICT[test_case["UrlPath"]]["request"]["header"] = headers
+            self.REALTIME_API_DICT[test_case["UrlPath"]]["request"]["param"] = param_to_dict(params)
+            self.REALTIME_API_DICT[test_case["UrlPath"]]["request"]["data"] = body_to_dict(headers["Content-Type"],
+                                                                                           datas)
+            self.REALTIME_API_DICT[test_case["UrlPath"]]["response"]["header"] = force_to_json(
+                json.dumps(dict(response.headers.items()), ensure_ascii=False))
+            self.REALTIME_API_DICT[test_case["UrlPath"]]["response"]["data"] = force_to_json(response.text)
+            self.REALTIME_API_DICT[test_case["UrlPath"]]["status_code"] = response.status_code
+            self.REALTIME_API_DICT[test_case["UrlPath"]]["trace_time"] = str(datetime.datetime.now())
             logger.info(
                 "接口请求详细日志如下☞：\n 【请求URL】：{}\n 【请求方法】：{}\n 【请求头部】：{}\n 【请求数据】：{}\n 【响应结果】：{}".format(response.request.url,
                                                                                                    response.request.method,
@@ -130,10 +144,13 @@ class TestBusinessOperationApi(object):
                            params if params != "" else "N/A",
                            unicode_to_normal(
                                response.request.body) if response.request.body != "" and response.request.body is not None else "N/A"))
+            allure.attach(json.dumps(force_to_json(json.dumps(dict(response.headers.items()), ensure_ascii=False)),
+                                     indent=1, ensure_ascii=False), name="响应头部",
+                          attachment_type=allure.attachment_type.JSON, extension="json")
             allure.attach(json.dumps(force_to_json(response.text), indent=1, ensure_ascii=False), name="响应结果",
                           attachment_type=allure.attachment_type.JSON, extension="json")
 
-            # # 保存接口请求信息
+            # # 保存上次接口请求信息
             # self.ender.testcase_request_info(row_count=test_case_count,
             #                                  actual_header=json.dumps(headers, indent=1,
             #                                                           ensure_ascii=False) if headers != "" else "",
@@ -150,11 +167,12 @@ class TestBusinessOperationApi(object):
                     name="断言信息", attachment_type=allure.attachment_type.JSON,
                     extension="json")
                 AdvanceAssertionTools(test_case_schema=test_case, origin_data=force_to_json(response.text),
-                                      realtime_dependency=self.REALTIME_RESPONSE_DICT).advance_assert()
+                                      realtime_dependency=self.REALTIME_API_DICT).advance_assert()
             # 标记测试结果为成功(pass)
             with allure.step("测试结果标记"):
                 result = self.ender.testcase_result_pass(row_count=test_case_count,
-                                                         write_msg=force_to_json(response.text),
+                                                         write_msg=json.dumps(force_to_json(response.text),
+                                                                              ensure_ascii=False, indent=1),
                                                          pass_flag="PASS")
                 allure.attach(json.dumps(result, indent=1, ensure_ascii=False), name="测试结果",
                               attachment_type=allure.attachment_type.JSON, extension="json")
@@ -171,7 +189,8 @@ class TestBusinessOperationApi(object):
                                                                           session.dependency_fail_info_dict,
                                                                           indent=1, ensure_ascii=False)))
                     result = self.ender.testcase_result_xfail(row_count=test_case_count,
-                                                              write_msg=force_to_json(response.text),
+                                                              write_msg=json.dumps(force_to_json(response.text),
+                                                                                   ensure_ascii=False, indent=1),
                                                               xfail_reason=str(reason), xfail_flag="XFAIL")
                     allure.attach(json.dumps(result, indent=1, ensure_ascii=False), name="测试结果",
                                   attachment_type=allure.attachment_type.JSON, extension="json")
@@ -181,19 +200,24 @@ class TestBusinessOperationApi(object):
                         "[End]：[{}]~[{}]断言检测存在失败情况，失败原因为【{}】，测试用例断言失败.".format(test_case["ID"], test_case["Title"],
                                                                                str(reason)))
                     result = self.ender.testcase_result_fail(row_count=test_case_count,
-                                                             write_msg=force_to_json(response.text),
+                                                             write_msg=json.dumps(force_to_json(response.text),
+                                                                                  ensure_ascii=False, indent=1),
                                                              fail_reason=str(reason), fail_flag="FAIL")
                     allure.attach(json.dumps(result, indent=1, ensure_ascii=False), name="测试结果",
                                   attachment_type=allure.attachment_type.JSON, extension="json")
                     pytest.fail(msg=str(reason))
+                    print("Next Assertion")
 
     def teardown_class(self):
         """
         测试用例结束操作
         :return:
         """
-        # 删除接口响应缓存字典
-        del self.REALTIME_RESPONSE_DICT
+        with open(file=os.path.join(RECORD_PATH, "ApiRecordDocs.json"), mode=r'w', encoding='utf-8') as record:
+            record.write(json.dumps(self.REALTIME_API_DICT, ensure_ascii=False, indent=2))
+            logger.info("[Record]：接口信息实时录制已完成并保存成功.")
+        # 删除接口信息缓存字典
+        del self.REALTIME_API_DICT
         # 保存更新后的测试用例
         self.ender.save_testcase_result()
         logger.info("[Done]：EXCEL测试用例文件已同步更新执行结果并保存.")
