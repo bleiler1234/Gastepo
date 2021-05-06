@@ -595,6 +595,7 @@ class OrganizePostmanTools(PostmanTools):
         """
         postman_json_data_groups_df = pd.DataFrame()
         items = self.postman_collection_dict["item"]
+        debug_watcher = None
 
         def fetch_env(item):
             param_list = re.findall(r'\[.*?\]', item)
@@ -805,6 +806,13 @@ class OrganizePostmanTools(PostmanTools):
                 for item in items:
                     if item.__contains__("item"):
                         for inner_item in item["item"]:
+                            debug_watcher = {"CaseId": "TC_" + str(test_id),
+                                             "CaseRoute": str(
+                                                 self.postman_collection_dict["info"]["name"]) + " ☞ " + str(
+                                                 item["name"]) + " ☞ " + str(
+                                                 inner_item[
+                                                     "name"]),
+                                             "CaseUrl": "/" + "/".join(inner_item["request"]["url"]["path"])}
                             api_json_dict = dict(
                                 ID="TC_" + str(test_id),
                                 AID="API_" + str(test_id),
@@ -843,7 +851,7 @@ class OrganizePostmanTools(PostmanTools):
                 postman_json_data_groups_df = postman_json_data_groups_df.append(postman_json_data_df)
             return postman_json_data_groups_df
         except Exception:
-            logger.exception("[Exception]：依据Postman集合文档自动生成接口抓包文档过程中发生异常，请检查！")
+            logger.exception("[Exception]：依据Postman集合文档自动生成表格测试用例过程中发生异常，Debug监测字典为{}，请检查！".format(debug_watcher))
             sys.exit(1)
 
 

@@ -820,7 +820,7 @@ class AdvanceAssertionTools(AssertionTools):
                 else:
                     logger.warning(
                         '[WARNING]：高级断言中expect数据依赖表达式"{}"必须以列表方式指定且不能为空, 请检查并修改！'.format(assert_dict.get("expect")))
-                    expect_vars = ["" if assert_dict.get("expect") == [] else assert_dict.get("expect")]
+                    expect_vars = emoji_to_str(["" if assert_dict.get("expect") == [] else assert_dict.get("expect")])
                 if expect_vars == []:
                     expect_vars = [""]
                 invalid_matchers = self.check_matcher_type(matcher_info=assert_dict.get("matcher"))

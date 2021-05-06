@@ -18,13 +18,13 @@
   * 响应获取：*JsonPath*
   * 断言工具：*Hamcrest*
   * Web服务：*Flask*、*FastApi*
-  * 容器服务：*Docker*
+  * 部署方式：*Docker*、*Jenkins*
 
 ***
 
 ### Framework
 
-![Framework.png](https://i.loli.net/2021/04/23/ZwBVLu4hyCXrkqI.png)
+<img src="https://i.loli.net/2021/04/26/qsx8IdGPyQKc5fp.png" alt="Framework.png" style="zoom:55%;" />
 
 ***
 
@@ -44,7 +44,7 @@
                 "$['idCardNo']": {
                   	"/v3_0/getCardId": {
                       	"response": {
-                          "data": "$.data.cardId"
+                          	"data": "$.data.cardId"
                         }
                     }
                 }
@@ -66,7 +66,7 @@
               "user": {
                 "/v3_0/getUserName": {
                   	"response": {
-                      "data": "$.userName"
+                      	"data": "$.userName"
                     }
                 }
               }
@@ -93,7 +93,7 @@ python_classes = Test*
 python_functions = test*
 ```
 
-- **Auto Runtime**
+- **Automation Runtime**
     - *Step_1*：自动分析指定扫描文件夹中所有Postman接口集合并聚合生成表格用例文件。
     - *Step_2*：自动化测试用例支持用例筛选及BDD方式执行，单条用例支持激活或禁用。
     - *Step_3*：自动化测试用例使用Dependency Schema规约结构的接口请求数据依赖。
@@ -114,7 +114,7 @@ allure generate {json测试结果目录} -o {html测试报告目录} --clean
 
 - <u>**Allure Test Report**</u>
 
-![Allure测试报告](https://i.loli.net/2021/04/22/9XmosLQtigcSv34.png)
+<img src="https://i.loli.net/2021/04/22/9XmosLQtigcSv34.png" alt="Allure测试报告" style="zoom:40%;" />
 
 ***
 

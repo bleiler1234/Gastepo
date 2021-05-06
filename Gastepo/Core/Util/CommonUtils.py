@@ -431,7 +431,7 @@ def value_by_type(dest_value, test_value):
     :param test_value: 测试值
     :return:
     """
-    if isinstance(test_value, type(dest_value)):
+    if isinstance(test_value, type(dest_value)) or dest_value is None:
         return test_value
     else:
         type_str = str(type(dest_value)).split(r"'")[1]

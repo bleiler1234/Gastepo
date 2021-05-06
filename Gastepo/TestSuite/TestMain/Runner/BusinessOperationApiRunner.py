@@ -206,7 +206,6 @@ class TestBusinessOperationApi(object):
                     allure.attach(json.dumps(result, indent=1, ensure_ascii=False), name="测试结果",
                                   attachment_type=allure.attachment_type.JSON, extension="json")
                     pytest.fail(msg=str(reason))
-                    print("Next Assertion")
 
     def teardown_class(self):
         """

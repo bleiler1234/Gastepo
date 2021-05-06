@@ -7,6 +7,7 @@ import pandas as pd
 import pymysql
 import redis
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 from pymysql.err import InternalError
 from redis import ConnectionError
 from redis.exceptions import ResponseError
@@ -305,21 +306,6 @@ class MongodbDatabaseTools(object):
             drop = tb.drop()
             return drop
 
-        def find(self, tbname, filter_json=None, projection_json=None, sort_json=None, skip=0, limit=0):
-            """
-            表查询操作
-            :param tbname: MongoDB表名
-            :param filter_json: 过滤json
-            :param projection_json: 显示json
-            :param sort_json: 排序json
-            :param skip: 跳过行数
-            :param limit: 限制行数
-            :return:
-            """
-            tb = eval("self.db_client.{}".format(tbname))
-            return tb.find(filter=filter_json, projection=projection_json, sort=list(sort_json.items()), skip=skip,
-                           limit=limit)
-
         def insert_one(self, tbname, insert_json):
             """
             单条数据插入
@@ -390,6 +376,40 @@ class MongodbDatabaseTools(object):
             update = tb.update_many(filter=filter_json, update=update_json, upsert=upsert)
             return update.modified_count
 
+        def find_one(self, tbname, filter_json=None, projection_json=None, sort_json={}, skip=0, limit=0):
+            """
+            查询匹配到的第一条数据
+            :param tbname: MongoDB表名
+            :param filter_json: 过滤json
+            :param projection_json: 显示json
+            :param sort_json: 排序json
+            :param skip: 跳过行数
+            :param limit: 限制行数
+            :return:
+            """
+            tb = eval("self.db_client.{}".format(tbname))
+            return tb.find_one(filter=filter_json, projection=projection_json, sort=list(sort_json.items()), skip=skip,
+                               limit=limit)
+
+        def find(self, tbname, filter_json=None, projection_json=None, sort_json={}, skip=0, limit=0):
+            """
+            查询多条数据
+            :param tbname: MongoDB表名
+            :param filter_json: 过滤json
+            :param projection_json: 显示json
+            :param sort_json: 排序json
+            :param skip: 跳过行数
+            :param limit: 限制行数
+            :return:
+            """
+            result = []
+            tb = eval("self.db_client.{}".format(tbname))
+            items = tb.find(filter=filter_json, projection=projection_json, sort=list(sort_json.items()), skip=skip,
+                            limit=limit)
+            for item in items:
+                result.append(item)
+            return result
+
 
 if __name__ == '__main__':
     # print(MysqlDatabaseTools("test", "test").query_file_df("select name from userinfo where id in (1,2)"))
@@ -406,7 +426,10 @@ if __name__ == '__main__':
     # print(
     #     db.update_many(tbname="test_mongo", filter_json={"name": {"$regex": "^a"}},
     #                    update_json={"$set": {"club": "cu"}}))
+    # print(db.update_one(tbname="test_mongo", filter_json={"_id": "id1"},
+    #                     update_json={"$set": {"name": "Mayer", "club": "Merida"}}, upsert=True))
     # print(db.delete_one(tbname="test_mongo", delete_json={"name": {"$regex":"^a"}}))
     # print(db.delete_many(tbname="test_mongo", delete_json={"name": {"$regex": "^a"}}))
-    for i in db.find(tbname='test_mongo', sort_json={"name": 1}):
-        print(i)
+    # print(db.find_one(tbname="test_mongo", filter_json={"_id": ObjectId("5ff2c39364efd65eed78597e")}))
+    # print(db.find(tbname="test_mongo", filter_json={"name": {"$regex": "s"}}, projection_json={"_id": 1, "name": 1},
+    #               sort_json={"_id": -1}))

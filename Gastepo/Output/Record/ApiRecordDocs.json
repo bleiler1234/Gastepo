@@ -1,0 +1,136 @@
+{
+  "/mock/get_xml01": {
+    "request": {
+      "path": {},
+      "header": {
+        "Content-Type": "application/xml"
+      },
+      "param": {},
+      "data": {}
+    },
+    "response": {
+      "header": {
+        "date": "Tue, 27 Apr 2021 08:14:20 GMT",
+        "server": "uvicorn",
+        "content-length": "232",
+        "content-type": "application/xml"
+      },
+      "data": {
+        "qa": {
+          "history": {
+            "id": "1",
+            "name": "Mayer",
+            "battle": [
+              {
+                "order": "o1",
+                "location": "Japan"
+              },
+              {
+                "order": "o2",
+                "location": "Korean"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "status_code": 200,
+    "trace_time": "2021-04-27 16:18:57.359786"
+  },
+  "/mock/path01/{name}/test/{id}": {
+    "request": {
+      "path": {
+        "name": "mayer",
+        "id": 8
+      },
+      "header": {
+        "Content-Type": "application/json"
+      },
+      "param": {
+        "group": "g1"
+      },
+      "data": {}
+    },
+    "response": {
+      "header": {
+        "date": "Tue, 27 Apr 2021 08:14:20 GMT",
+        "server": "uvicorn",
+        "content-length": "97",
+        "content-type": "application/json"
+      },
+      "data": {
+        "code": 100,
+        "msg": "success",
+        "data": {
+          "id": 8,
+          "group": "g1",
+          "result": "now mayer's id is equal to 8"
+        }
+      }
+    },
+    "status_code": 200,
+    "trace_time": "2021-04-27 16:18:57.402451"
+  },
+  "/mock/get01": {
+    "request": {
+      "path": {},
+      "header": {
+        "Content-Type": "application/json"
+      },
+      "param": {
+        "id": "2"
+      },
+      "data": {}
+    },
+    "response": {
+      "header": {
+        "date": "Tue, 27 Apr 2021 08:14:20 GMT",
+        "server": "uvicorn",
+        "content-length": "37",
+        "content-type": "application/json"
+      },
+      "data": {
+        "code": 100,
+        "msg": "success",
+        "data": 2
+      }
+    },
+    "status_code": 200,
+    "trace_time": "2021-04-27 16:18:57.431819"
+  },
+  "/mock/post02": {
+    "request": {
+      "path": {},
+      "header": {
+        "Content-Type": "application/json"
+      },
+      "param": {},
+      "data": [
+        {
+          "id": 8,
+          "name": "mayer"
+        }
+      ]
+    },
+    "response": {
+      "header": {
+        "date": "Tue, 27 Apr 2021 08:14:20 GMT",
+        "server": "uvicorn",
+        "content-length": "61",
+        "content-type": "application/json"
+      },
+      "data": {
+        "code": 100,
+        "msg": "success",
+        "data": [
+          {
+            "id": 8,
+            "name": "mayer"
+          }
+        ]
+      }
+    },
+    "status_code": 200,
+    "trace_time": "2021-04-27 16:18:57.461476"
+  }
+}

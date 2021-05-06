@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import os
 import re
 from typing import Any, List, Optional
 
@@ -10,7 +9,6 @@ from fastapi import FastAPI, Request, Query, Body
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
 from hamcrest import *
 from pydantic import BaseModel, Field
 
@@ -18,14 +16,14 @@ from Gastepo.Core.Base.BaseData import MATCHER_TYPE
 from Gastepo.Core.Extend.AssertDependencyExtends import *
 from Gastepo.Core.Extend.HamcrestCustomExtends import *
 from Gastepo.Core.Util.AssertionUtils import AdvanceAssertionTools
-from Gastepo.Core.Base.BaseData import RESOURCE_PATH
+from Gastepo.Core.Util.CommonUtils import emoji_to_str
 
 """
 描述：自动化测试扩展功能Web服务，如在线断言调试器等。
 """
 server = FastAPI(title="Automation", description="主要通过接口方式在线使用自动化测试相关功能扩展, 如在线断言调试等。",
-                 docs_url='/api-docs', redoc_url='/re-docs',
-                 openapi_url="/automation/open-api.json")
+                 docs_url='/qa/debug/api-docs', redoc_url='/qa/debug/re-docs',
+                 openapi_url="/qa/debug/open-api.json")
 
 
 # 断言Schema模型
@@ -138,15 +136,25 @@ async def assert_debuger(request: Request,
     fetch_schema = assert_schema[0]
 
     # 初始化断言器
+    # todo: realtime_dependency可以使用离线录制数据，需提供上传接口并需要开启schema_url的debug模式。
     asserter = AdvanceAssertionTools(test_case_schema={}, origin_data=request_body,
                                      realtime_dependency={})
 
     # 调试断言Schema
-    actual_data = asserter.expr_identity(param_expr=fetch_schema.get("actual"), fetch_actual=True,
-                                         multi=fetch_schema.get("multi"))
+    actual_data = emoji_to_str(asserter.analysis_actual(param_expr=fetch_schema.get("actual"),
+                                                        origin_data=request_body,
+                                                        function_mode=False,
+                                                        multi=fetch_schema.get("multi")))
     print("当前Assert Schema为：\n{}".format(json.dumps(assert_schema, indent=2, ensure_ascii=False)))
     print("actual匹配数据为：{}".format(actual_data))
-    expect_data = asserter.check_expect(actual=None, expect=fetch_schema.get("expect"), multi=fetch_schema.get("multi"))
+    if isinstance(fetch_schema.get("expect"), list) and fetch_schema.get("expect").__len__() != 0:
+        expect_data = emoji_to_str([asserter.analysis_expect(param_expr=fetch_schema.get("expect")[0],
+                                                             origin_data=request_body,
+                                                             multi=fetch_schema.get("multi"))])
+    else:
+        print('[WARNING]：高级断言中expect数据依赖表达式"{}"必须以列表方式指定且不能为空, 请检查并修改！'.format(fetch_schema.get("expect")))
+        expect_data = emoji_to_str(["" if fetch_schema.get("expect") == [] else fetch_schema.get("expect")])
+
     print("expect期望数据为：{}".format(expect_data))
     now_matcher = fetch_schema.get("matcher")
     print("matcher断言器为：{}".format(now_matcher))
@@ -198,10 +206,6 @@ async def matcher_hamcrest():
     return jsonable_encoder(matcher_hamcrest_list)
 
 
-# 自动化框架入门手册
-server.mount('/manual',
-             app=StaticFiles(directory=os.path.join(os.path.join(RESOURCE_PATH, "Manual"), "_book"), html=True),
-             name="manual")
 # 启动服务
 if __name__ == '__main__':
     uvicorn.run(app="ApiServer:server", host="0.0.0.0", port=5001, debug=True, reload=True)

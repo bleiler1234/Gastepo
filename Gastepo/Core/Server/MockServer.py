@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from Gastepo.Core.Util.CommonUtils import json_to_xml, xml_to_json
 
 """
-描述：自动化测试模拟接口Restful服务，如Mock测试接口等。
+描述：自动化测试模拟接口Web服务，如Mock测试接口等。
 """
 server = FastAPI(title="Mock Server", description="该文档中所有Mock接口主要用于自动化框架的单元测试。",
                  docs_url='/qa/mock/api-docs', redoc_url='/qa/mock/re-docs',
