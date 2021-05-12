@@ -8,8 +8,8 @@ from jsonpath import jsonpath
 
 from Gastepo.Core.Base.CustomException import InvalidConsumesError
 from Gastepo.Core.Extend.AssertDependencyExtends import *
-from Gastepo.Core.Util.CommonUtils import emoji_to_str
-from Gastepo.Core.Util.CommonUtils import param_to_dict, value_by_type, xml_to_json, json_to_xml, force_to_json
+from Gastepo.Core.Util.CommonUtils import emoji_to_str, param_to_dict, value_by_type, xml_to_json, json_to_xml, \
+    force_to_json, url_identity
 from Gastepo.Core.Util.LogUtils import logger
 
 # 全局Session
@@ -1068,7 +1068,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
         :return:
         """
         try:
-            main_url = self.url_identity(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw)
+            main_url = self.path_sensor(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw)
             query_string = self.joint_param(**kw)
             response = self.delete(
                 url=(main_url + "?" + query_string) if query_string != "" else main_url,
@@ -1089,12 +1089,12 @@ class AdvanceTestCaseRequestTool(RequestTool):
         try:
             if query_patch == "":
                 response = self.patch(
-                    url=self.url_identity(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw),
+                    url=self.path_sensor(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw),
                     headers=self.joint_header(**kw),
                     data=self.joint_data(self.test_case["Consumes"], **kw),
                     files=self.joint_file(self.test_case["Consumes"]))
             if query_patch != "":
-                main_url = self.url_identity(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw)
+                main_url = self.path_sensor(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw)
                 query_string = self.joint_param(**kw)
                 response = self.patch(
                     url=(main_url + "?" + query_string) if query_string != "" else main_url,
@@ -1116,12 +1116,12 @@ class AdvanceTestCaseRequestTool(RequestTool):
         try:
             if query_put == "":
                 response = self.put(
-                    url=self.url_identity(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw),
+                    url=self.path_sensor(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw),
                     headers=self.joint_header(**kw),
                     data=self.joint_data(self.test_case["Consumes"], **kw),
                     files=self.joint_file(self.test_case["Consumes"]))
             if query_put != "":
-                main_url = self.url_identity(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw)
+                main_url = self.path_sensor(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw)
                 query_string = self.joint_param(**kw)
                 response = self.put(
                     url=(main_url + "?" + query_string) if query_string != "" else main_url,
@@ -1143,12 +1143,12 @@ class AdvanceTestCaseRequestTool(RequestTool):
         try:
             if query_post == "":
                 response = self.post(
-                    url=self.url_identity(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw),
+                    url=self.path_sensor(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw),
                     headers=self.joint_header(**kw),
                     data=self.joint_data(self.test_case["Consumes"], **kw),
                     files=self.joint_file(self.test_case["Consumes"]))
             if query_post != "":
-                main_url = self.url_identity(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw)
+                main_url = self.path_sensor(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw)
                 query_string = self.joint_param(**kw)
                 response = self.post(
                     url=(main_url + "?" + query_string) if query_string != "" else main_url,
@@ -1166,7 +1166,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
         :return:
         """
         try:
-            main_url = self.url_identity(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw)
+            main_url = self.path_sensor(urljoin(self.test_case["BaseUrl"], self.test_case["UrlPath"]), **kw)
             query_string = self.joint_param(**kw)
             response = self.get(
                 url=(main_url + "?" + query_string) if query_string != "" else main_url,
@@ -1176,7 +1176,7 @@ class AdvanceTestCaseRequestTool(RequestTool):
         except Exception:
             logger.exception('[Exception]：发送GET接口请求过程中发生异常！')
 
-    def url_identity(self, url, **kw):
+    def path_sensor(self, url, **kw):
         """
         识别并替换请求url中的路径参数
         :param url: 请求url
@@ -1576,7 +1576,7 @@ class SuperTestCaseRequestTool(AdvanceTestCaseRequestTool):
             return emoji_to_str(result)
         elif isinstance(param_expr, dict):
             for key, value in param_expr.items():
-                if re.match(r'^/{1}.+', key):
+                if url_identity(url=key, simple=False) != "Unrecognized Url":
                     return emoji_to_str(self.schema_url(maintainer=maintainer, expr_key=key, expr_value=value))
                 elif re.match(r'^\$\{.*\}$', key):
                     return emoji_to_str(self.schema_function(maintainer=maintainer, expr_key=key, expr_value=value))

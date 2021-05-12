@@ -40,6 +40,13 @@ mongodb:
       db: admin
       username: root
       password: 123456
+  docker:
+    host: localhost
+    port: 27017
+    auth:
+      db: admin
+      username: superadmin
+      password: 123456
 redis:
   qa:
     host: 10.6.0.116

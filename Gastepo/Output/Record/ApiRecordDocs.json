@@ -1,5 +1,5 @@
 {
-  "/mock/get_xml01": {
+  "GET /mock/get_xml01": {
     "request": {
       "path": {},
       "header": {
@@ -10,7 +10,7 @@
     },
     "response": {
       "header": {
-        "date": "Tue, 27 Apr 2021 08:14:20 GMT",
+        "date": "Wed, 12 May 2021 05:05:35 GMT",
         "server": "uvicorn",
         "content-length": "232",
         "content-type": "application/xml"
@@ -35,9 +35,38 @@
       }
     },
     "status_code": 200,
-    "trace_time": "2021-04-27 16:18:57.359786"
+    "trace_time": "2021-05-12 13:11:12.241919"
   },
-  "/mock/path01/{name}/test/{id}": {
+  "GET /mock/header01": {
+    "request": {
+      "path": {},
+      "header": {
+        "Content-Type": "application/json",
+        "id": "9"
+      },
+      "param": {},
+      "data": {}
+    },
+    "response": {
+      "header": {
+        "date": "Wed, 12 May 2021 05:05:35 GMT",
+        "server": "uvicorn",
+        "content-length": "76",
+        "content-type": "application/json"
+      },
+      "data": {
+        "code": 100,
+        "msg": "success",
+        "data": {
+          "id": 9,
+          "result": "now id is equal to 9"
+        }
+      }
+    },
+    "status_code": 200,
+    "trace_time": "2021-05-12 13:11:12.301443"
+  },
+  "GET /mock/path01/{name}/test/{id}": {
     "request": {
       "path": {
         "name": "mayer",
@@ -53,7 +82,7 @@
     },
     "response": {
       "header": {
-        "date": "Tue, 27 Apr 2021 08:14:20 GMT",
+        "date": "Wed, 12 May 2021 05:05:35 GMT",
         "server": "uvicorn",
         "content-length": "97",
         "content-type": "application/json"
@@ -69,9 +98,9 @@
       }
     },
     "status_code": 200,
-    "trace_time": "2021-04-27 16:18:57.402451"
+    "trace_time": "2021-05-12 13:11:12.345388"
   },
-  "/mock/get01": {
+  "GET /mock/get01": {
     "request": {
       "path": {},
       "header": {
@@ -84,7 +113,7 @@
     },
     "response": {
       "header": {
-        "date": "Tue, 27 Apr 2021 08:14:20 GMT",
+        "date": "Wed, 12 May 2021 05:05:35 GMT",
         "server": "uvicorn",
         "content-length": "37",
         "content-type": "application/json"
@@ -96,9 +125,247 @@
       }
     },
     "status_code": 200,
-    "trace_time": "2021-04-27 16:18:57.431819"
+    "trace_time": "2021-05-12 13:11:12.373781"
   },
-  "/mock/post02": {
+  "POST /mock/post01": {
+    "request": {
+      "path": {},
+      "header": {
+        "Content-Type": "application/json"
+      },
+      "param": {},
+      "data": {}
+    },
+    "response": {
+      "header": {
+        "date": "Wed, 12 May 2021 05:05:35 GMT",
+        "server": "uvicorn",
+        "content-length": "61",
+        "content-type": "application/json"
+      },
+      "data": {
+        "code": 100,
+        "msg": "success",
+        "data": [
+          {
+            "id": 2,
+            "name": "mayer"
+          }
+        ]
+      }
+    },
+    "status_code": 200,
+    "trace_time": "2021-05-12 13:11:12.405121"
+  },
+  "POST /mock/post_xml01": {
+    "request": {
+      "path": {},
+      "header": {
+        "Content-Type": "application/xml"
+      },
+      "param": {},
+      "data": {
+        "history": {
+          "id": "1",
+          "name": "Mayer",
+          "battle": [
+            {
+              "order": "o1",
+              "location": "Japan"
+            },
+            {
+              "order": "o2",
+              "location": "Korean"
+            }
+          ]
+        }
+      }
+    },
+    "response": {
+      "header": {
+        "date": "Wed, 12 May 2021 05:05:35 GMT",
+        "server": "uvicorn",
+        "content-length": "288",
+        "content-type": "application/xml"
+      },
+      "data": {
+        "qa": {
+          "result": {
+            "convert": "true",
+            "history": {
+              "id": "1",
+              "name": "Mayer",
+              "battle": [
+                {
+                  "order": "o1",
+                  "location": "Japan"
+                },
+                {
+                  "order": "o2",
+                  "location": "Korean"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "status_code": 200,
+    "trace_time": "2021-05-12 13:11:12.443620"
+  },
+  "POST /mock/www-form-urlencode01": {
+    "request": {
+      "path": {},
+      "header": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "param": {},
+      "data": {
+        "id": "5",
+        "name": "test-www-form-urlencoded"
+      }
+    },
+    "response": {
+      "header": {
+        "date": "Wed, 12 May 2021 05:05:35 GMT",
+        "server": "uvicorn",
+        "content-length": "78",
+        "content-type": "application/json"
+      },
+      "data": {
+        "code": 100,
+        "msg": "success",
+        "data": {
+          "id": 5,
+          "name": "test-www-form-urlencoded"
+        }
+      }
+    },
+    "status_code": 200,
+    "trace_time": "2021-05-12 13:11:12.480722"
+  },
+  "POST /mock/form-data01": {
+    "request": {
+      "path": {},
+      "header": {
+        "Content-Type": "multipart/form-data"
+      },
+      "param": {},
+      "data": {
+        "id": "1",
+        "name": "test-form"
+      }
+    },
+    "response": {
+      "header": {
+        "date": "Wed, 12 May 2021 05:05:35 GMT",
+        "server": "uvicorn",
+        "content-length": "128",
+        "content-type": "application/json"
+      },
+      "data": {
+        "code": 100,
+        "msg": "success",
+        "data": {
+          "id": 1,
+          "name": "test-form",
+          "file": {
+            "filename": [
+              "file1.txt",
+              "file2.txt"
+            ],
+            "filetype": [
+              "",
+              ""
+            ]
+          }
+        }
+      }
+    },
+    "status_code": 200,
+    "trace_time": "2021-05-12 13:11:12.726499"
+  },
+  "POST /mock/complex01/path": {
+    "request": {
+      "path": {},
+      "header": {
+        "Content-Type": "application/json",
+        "h1": "header1"
+      },
+      "param": {
+        "q1": "11"
+      },
+      "data": {
+        "id": 1,
+        "name": "mayer"
+      }
+    },
+    "response": {
+      "header": {
+        "date": "Wed, 12 May 2021 05:05:35 GMT",
+        "server": "uvicorn",
+        "content-length": "103",
+        "content-type": "application/json"
+      },
+      "data": {
+        "code": 100,
+        "msg": "success",
+        "data": {
+          "p1": "path",
+          "h1": "header1",
+          "q1": "11",
+          "d1": {
+            "id": 1,
+            "name": "mayer"
+          }
+        }
+      }
+    },
+    "status_code": 200,
+    "trace_time": "2021-05-12 13:11:12.766145"
+  },
+  "PATCH /mock/patch01": {
+    "request": {
+      "path": {},
+      "header": {
+        "Content-Type": "application/json"
+      },
+      "param": {},
+      "data": {
+        "id": 11,
+        "name": "mayer"
+      }
+    },
+    "response": {
+      "header": {
+        "date": "Wed, 12 May 2021 05:05:35 GMT",
+        "server": "uvicorn",
+        "content-length": "123",
+        "content-type": "application/json"
+      },
+      "data": [
+        {
+          "code": 100,
+          "msg": "success",
+          "data": {
+            "id": 11,
+            "name": "mayer"
+          }
+        },
+        {
+          "code": 100,
+          "msg": "success",
+          "data": {
+            "id": 11,
+            "name": "mayer"
+          }
+        }
+      ]
+    },
+    "status_code": 200,
+    "trace_time": "2021-05-12 13:11:12.824201"
+  },
+  "POST /mock/post02": {
     "request": {
       "path": {},
       "header": {
@@ -114,7 +381,7 @@
     },
     "response": {
       "header": {
-        "date": "Tue, 27 Apr 2021 08:14:20 GMT",
+        "date": "Wed, 12 May 2021 05:05:35 GMT",
         "server": "uvicorn",
         "content-length": "61",
         "content-type": "application/json"
@@ -131,6 +398,6 @@
       }
     },
     "status_code": 200,
-    "trace_time": "2021-04-27 16:18:57.461476"
+    "trace_time": "2021-05-12 13:11:12.884220"
   }
 }

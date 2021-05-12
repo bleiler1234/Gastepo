@@ -108,18 +108,21 @@ class TestBusinessOperationApi(object):
             paths = session.fetch_request_dict.get("paths")
             params = session.fetch_request_dict.get("params")
             datas = session.fetch_request_dict.get("datas")
-            self.REALTIME_API_DICT[test_case["UrlPath"]] = dict(request=dict(path={}, header={}, param={}, data={}),
-                                                                response=dict(header={}, data={}))
-            self.REALTIME_API_DICT[test_case["UrlPath"]]["request"]["path"] = {} if paths == "" else paths
-            self.REALTIME_API_DICT[test_case["UrlPath"]]["request"]["header"] = headers
-            self.REALTIME_API_DICT[test_case["UrlPath"]]["request"]["param"] = param_to_dict(params)
-            self.REALTIME_API_DICT[test_case["UrlPath"]]["request"]["data"] = body_to_dict(headers["Content-Type"],
-                                                                                           datas)
-            self.REALTIME_API_DICT[test_case["UrlPath"]]["response"]["header"] = force_to_json(
+
+            # 接口信息缓存字典数据注入
+            IDENTITY_URL = str(test_case["Method"]).strip().upper() + " " + str(test_case["UrlPath"]).strip()
+            self.REALTIME_API_DICT[IDENTITY_URL] = dict(request=dict(path={}, header={}, param={}, data={}),
+                                                        response=dict(header={}, data={}))
+            self.REALTIME_API_DICT[IDENTITY_URL]["request"]["path"] = {} if paths == "" else paths
+            self.REALTIME_API_DICT[IDENTITY_URL]["request"]["header"] = headers
+            self.REALTIME_API_DICT[IDENTITY_URL]["request"]["param"] = param_to_dict(params)
+            self.REALTIME_API_DICT[IDENTITY_URL]["request"]["data"] = body_to_dict(headers["Content-Type"],
+                                                                                   datas)
+            self.REALTIME_API_DICT[IDENTITY_URL]["response"]["header"] = force_to_json(
                 json.dumps(dict(response.headers.items()), ensure_ascii=False))
-            self.REALTIME_API_DICT[test_case["UrlPath"]]["response"]["data"] = force_to_json(response.text)
-            self.REALTIME_API_DICT[test_case["UrlPath"]]["status_code"] = response.status_code
-            self.REALTIME_API_DICT[test_case["UrlPath"]]["trace_time"] = str(datetime.datetime.now())
+            self.REALTIME_API_DICT[IDENTITY_URL]["response"]["data"] = force_to_json(response.text)
+            self.REALTIME_API_DICT[IDENTITY_URL]["status_code"] = response.status_code
+            self.REALTIME_API_DICT[IDENTITY_URL]["trace_time"] = str(datetime.datetime.now())
             logger.info(
                 "接口请求详细日志如下☞：\n 【请求URL】：{}\n 【请求方法】：{}\n 【请求头部】：{}\n 【请求数据】：{}\n 【响应结果】：{}".format(response.request.url,
                                                                                                    response.request.method,

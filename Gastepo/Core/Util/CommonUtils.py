@@ -394,6 +394,31 @@ def get_ip():
     return ip
 
 
+def url_identity(url, simple=False):
+    """
+    识别接口请求URL的指定形式，如"/api/v1/demo"或"GET /api/v1/demo"
+    :param url: 接口请求URL
+    :param simple: 简洁方式开关(默认False)
+    :return:
+    """
+    if simple:
+        url = str(url).strip()
+        if re.match(r'^/{1}.+', url) is not None:
+            return url
+        else:
+            return "Unrecognized Url"
+    else:
+        identity = re.split(r'[ ]+', url)
+        if identity[0] in ["GET", "POST", "DELETE", "PUT", "PATCH"]:
+            temp_url = identity[1]
+            if re.match(r'^/{1}.+', temp_url) is not None:
+                return str(identity[0]).strip().upper() + " " + str(identity[1]).strip()
+            else:
+                return "Unrecognized Url"
+        else:
+            return "Unrecognized Url"
+
+
 def update_run_environment(env="Test"):
     """
     更新environment.properties中环境值

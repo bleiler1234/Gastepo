@@ -9,8 +9,8 @@ from Gastepo.Core.Base.BaseData import MATCHER_TYPE
 from Gastepo.Core.Base.CustomException import FlakyTestCaseError
 from Gastepo.Core.Extend.AssertDependencyExtends import *
 from Gastepo.Core.Extend.HamcrestCustomExtends import *
-from Gastepo.Core.Util.CommonUtils import emoji_to_str
-from Gastepo.Core.Util.CommonUtils import value_by_type
+from Gastepo.Core.Util.CommonUtils import emoji_to_str, value_by_type, url_identity
+
 from Gastepo.Core.Util.LogUtils import logger
 
 
@@ -156,7 +156,7 @@ class AdvanceAssertionTools(AssertionTools):
          :return:
          """
         url = str(expr_key).strip()
-        now = str(self.test_case["UrlPath"]).strip()
+        now = str(self.test_case["Method"]).strip().upper() + " " + str(self.test_case["UrlPath"]).strip()
         if self.realtime_dependency.__contains__(url):
             if isinstance(expr_value, str):
                 depend_jsonpath_expression = str(expr_value).strip()
@@ -643,10 +643,11 @@ class AdvanceAssertionTools(AssertionTools):
             elif isinstance(param_expr, dict):
                 for key, value in param_expr.items():
                     if re.match(r'(^self$)', key):
-                        return self.schema_url(expr_key=self.test_case["UrlPath"],
+                        return self.schema_url(expr_key=str(self.test_case["Method"]).strip().upper() + " " + str(
+                            self.test_case["UrlPath"]).strip(),
                                                expr_value=value, actual_mode=True,
                                                function_mode=function_mode, multi=multi)
-                    elif re.match(r'^/{1}.+', key):
+                    elif url_identity(url=key, simple=False) != "Unrecognized Url":
                         return self.schema_url(expr_key=key, expr_value=value, actual_mode=True,
                                                function_mode=function_mode, multi=multi)
                     elif re.match(r'^\$\{.*\}$', key):
@@ -678,10 +679,11 @@ class AdvanceAssertionTools(AssertionTools):
             elif isinstance(param_expr, dict):
                 for key, value in param_expr.items():
                     if re.match(r'(^self$)', key):
-                        return self.schema_url(expr_key=self.test_case["UrlPath"],
+                        return self.schema_url(expr_key=str(self.test_case["Method"]).strip().upper() + " " + str(
+                            self.test_case["UrlPath"]).strip(),
                                                expr_value=value, actual_mode=True,
                                                function_mode=True, multi=multi)
-                    elif re.match(r'^/{1}.+', key):
+                    elif url_identity(url=key, simple=False) != "Unrecognized Url":
                         return self.schema_url(expr_key=key, expr_value=value, actual_mode=True,
                                                function_mode=True, multi=multi)
                     elif re.match(r'^\$\{.*\}$', key):
@@ -722,10 +724,11 @@ class AdvanceAssertionTools(AssertionTools):
         elif isinstance(param_expr, dict):
             for key, value in param_expr.items():
                 if re.match(r'(^self$)', key):
-                    return self.schema_url(expr_key=self.test_case["UrlPath"],
+                    return self.schema_url(expr_key=str(self.test_case["Method"]).strip().upper() + " " + str(
+                        self.test_case["UrlPath"]).strip(),
                                            expr_value=value, actual_mode=False,
                                            function_mode=True, multi=multi)
-                elif re.match(r'^/{1}.+', key):
+                elif url_identity(url=key, simple=False) != "Unrecognized Url":
                     return self.schema_url(expr_key=key, expr_value=value, actual_mode=False,
                                            function_mode=True, multi=multi)
                 elif re.match(r'^\$\{.*\}$', key):

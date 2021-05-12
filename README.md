@@ -36,13 +36,13 @@
 ```json
 [
     {
-        "/v3_0/userInfo/searchContactUsers": {
+        "GET /v3_0/userInfo/searchContactUsers": {
             "to_path": {},
             "to_header": {},
             "to_param": {},
             "to_data": {
                 "$['idCardNo']": {
-                  	"/v3_0/getCardId": {
+                  	"GET /v3_0/getCardId": {
                       	"response": {
                           	"data": "$.data.cardId"
                         }
@@ -64,7 +64,7 @@
           {
             "${fetchCardId(user)}": {
               "user": {
-                "/v3_0/getUserName": {
+                "GET /v3_0/getUserName": {
                   	"response": {
                       	"data": "$.userName"
                     }

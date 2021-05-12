@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f2355551-146d-4e2f-87a6-7ff4e09ec123",
+		"_postman_id": "eacfb394-8955-4e3e-a66a-fcd3a5e600e8",
 		"name": "Automation",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -63,6 +63,32 @@
 				},
 				{
 					"name": "header01",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"[",
+									"    {",
+									"        \"actual\": {",
+									"            \"self\": \"$.code\"",
+									"        },",
+									"        \"expect\":[{",
+									"            \"self\": {",
+									"                \"response\": {",
+									"                    \"data\": \"$.code\"",
+									"                }",
+									"            }",
+									"        }],",
+									"        \"matcher\":\"has_item\",",
+									"        \"alert\":\"fail\"",
+									"    }",
+									"]"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -290,8 +316,8 @@
 									"        \"to_header\": {},",
 									"        \"to_param\": {},",
 									"        \"to_data\": {",
-									"            \"$['history']['id']\": { \"${str(a)}\": { \"a\": { \"/mock/get_xml01\": \"$.qa.history.id\" } } },",
-									"            \"$['history']['name']\": { \"/mock/get_xml01\": \"$.qa.history.name\" }",
+									"            \"$['history']['id']\": { \"${str(a)}\": { \"a\": { \"GET /mock/get_xml01\": \"$.qa.history.id\" } } },",
+									"            \"$['history']['name']\": { \"GET /mock/get_xml01\": \"$.qa.history.name\" }",
 									"        }",
 									"    }",
 									"]"
@@ -418,7 +444,7 @@
 									"        \"to_data\": {",
 									"            \"$['id']\": {",
 									"                \"${str(a)}\": {",
-									"                    \"a\": { \"/mock/get_xml01\": \"$.qa.history.id\" }",
+									"                    \"a\": { \"GET /mock/get_xml01\": \"$.qa.history.id\" }",
 									"                }",
 									"            }",
 									"        }",
@@ -603,12 +629,12 @@
 									"        \"to_param\": {},",
 									"        \"to_data\": {",
 									"            \"$[0]['id']\": {",
-									"                \"/mock/get01\": {",
+									"                \"GET /mock/get01\": {",
 									"                    \"request\": {",
 									"                        \"param\": {",
 									"                            \"${str(a)}\": {",
 									"                                \"a\": {",
-									"                                    \"/mock/path01/{name}/test/{id}\": {",
+									"                                    \"GET /mock/path01/{name}/test/{id}\": {",
 									"                                        \"response\": {",
 									"                                            \"data\": \"$.data.id\"",
 									"                                        }",
@@ -638,7 +664,7 @@
 									"                \"a\": {",
 									"                    \"${str(a)}\": {",
 									"                        \"a\": {",
-									"                            \"/mock/get01\": {",
+									"                            \"GET /mock/get01\": {",
 									"                                \"request\": {",
 									"                                    \"param\": \"$.id\"",
 									"                                }",
@@ -656,7 +682,7 @@
 									"        \"actual\": {",
 									"            \"${str(a)}\": {",
 									"                \"a\": {",
-									"                    \"/mock/get_xml01\": {",
+									"                    \"GET /mock/get_xml01\": {",
 									"                        \"response\": {",
 									"                            \"data\": \"$.qa.history.id\"",
 									"                        }",
