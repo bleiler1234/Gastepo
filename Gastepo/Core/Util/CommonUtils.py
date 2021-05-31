@@ -27,6 +27,26 @@ from Gastepo.Core.Util.ConfigUtils import YamlConfig
 from Gastepo.Core.Util.LogUtils import logger
 
 
+def is_number(s):
+    """
+    判断标识符是否为数字
+    :param s:
+    :return:
+    """
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+    try:
+        import unicodedata
+        unicodedata.numeric(s)
+        return True
+    except (TypeError, ValueError):
+        pass
+    return False
+
+
 def random_str(length):
     """
     生成指定长度的随机字符串.
@@ -346,21 +366,24 @@ def sm_ms(pic):
             return upload(pic=pic)
 
 
-def face_bed(pic):
+def face_bed(pic, alias):
     """
     上传图片到遇见图床
-    :param pic:
+    :param pic: 图片存取地址
+    :param alias: 图片名称别名
     :return:
     """
     url = "https://www.hualigs.cn/api/upload"
-    payload = {'apiType': 'ali',
-               'token': 'a147025c7b625acb3e3ceda751621089'}  # 需要登录hualigs.cn去获取自己的API Token
+    payload = {'apiType': 'bilibili',
+               'folder': 1082,
+               'field': alias,
+               'token': 'e274d5dbb94e919ab26cc5fca22692c3'}  # 需要登录hualigs.cn去获取自己的API Token
     files = [
         ('image', open(pic, 'rb'))
     ]
     res_json = requests.post(url, data=payload, files=files).json()
     if res_json["msg"] == "success":
-        cdn_url = res_json["data"]["url"]["ali"]
+        cdn_url = res_json["data"]["url"]["bilibili"]
         logger.info("图片上传成功，CDN地址为：{}".format(cdn_url))
         return cdn_url
     else:

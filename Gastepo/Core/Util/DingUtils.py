@@ -113,7 +113,8 @@ class EnvironmentDingTools(DingTools):
                                                                                                  RESOURCE_PATH,
                                                                                                  "Allure",
                                                                                                  "Allure.png")
-                                                                                             ))
+                                                                                             ),
+                                                                           alias="Allure.png")
                                                     )
                                            )
             self.token = YamlConfig(config=APPLICATION_CONFIG_FILE).get("ding")["token"]

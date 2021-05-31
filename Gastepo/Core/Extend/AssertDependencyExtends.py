@@ -41,9 +41,11 @@ class FUNCTION_ENUM(Enum):
     FLOAT = {"name": "float", "role": "系统", "description": "转换为浮点数", "example": 'float(2)'}
     STR = {"name": "str", "role": "系统", "description": "转换为字符串", "example": 'str(1.4)'}
     REPR = {"name": "repr", "role": "系统", "description": "转换为字符串（解释器模式）", "example": 'repr(1.4)'}
+    ORIGIN = {"name": "origin", "role": "框架", "description": "传入什么就返回什么", "example": 'origin("abcde")'}
     SUBSTR = {"name": "substr", "role": "框架", "description": "截取字符串", "example": 'substr("abcde",1,3,1)'}
     COMBINE_STR = {"name": "combine_str", "role": "框架", "description": "合并字符串", "example": 'combine_str("I am ", "yu")'}
     DUPLICATE = {"name": "duplicate", "role": "框架", "description": "集合去重", "example": 'duplicate([1,2,2])'}
+    REPLACE = {"name": "replace", "role": "框架", "description": "替换字符串", "example": 'replace("abc","a","d")'}
     FETCH = {"name": "fetch", "role": "框架", "description": "按索引从集合取值", "example": 'fetch([1,2,2],1)'}
     URL_ENCODE = {"name": "url_encode", "role": "框架", "description": "将URL参数进行编码", "example": 'id=1&name=yu'}
     F_QUOTE = {"name": "f_quote", "role": "框架", "description": "将数据进行URLENCODE编码", "example": "%7B%22id%22%3A%201%7D"}
@@ -78,6 +80,15 @@ class FUNCTION_ENUM(Enum):
                              "example": "timestamp10_to_normal(1608011144)"}
     TIMESTAMP_TO_NORMAL = {"name": "timestamp_to_normal", "role": "框架", "description": "13位时间戳转换为指定时间格式",
                            "example": "timestamp_to_normal(1595581242560)"}
+
+
+def origin(param):
+    return param
+
+
+def replace(string, old, new):
+    result = str(string).replace(old, new)
+    return result
 
 
 def duplicate(collect):

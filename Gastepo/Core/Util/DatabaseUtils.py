@@ -7,7 +7,6 @@ import pandas as pd
 import pymysql
 import redis
 from pymongo import MongoClient
-from bson.objectid import ObjectId
 from pymysql.err import InternalError
 from redis import ConnectionError
 from redis.exceptions import ResponseError
@@ -332,7 +331,7 @@ class MongodbDatabaseTools(object):
             """
             删除匹配到的第一条数据
             :param tbname: MongoDB表名
-            :param delete_json: 删除数据json
+            :param delete_json: 删除数据json, _id必须用ObjectId("5ff2c39364efd65eed78597e")方式
             :return: 删除数据id
             """
             tb = eval("self.db_client.{}".format(tbname))
@@ -343,7 +342,7 @@ class MongodbDatabaseTools(object):
             """
             删除多条数据
             :param tbname: MongoDB表名
-            :param delete_json: 删除数据json，若为{}则删除集合全部数据
+            :param delete_json: 删除数据json，若为{}则删除集合全部数据, _id必须用ObjectId("5ff2c39364efd65eed78597e")方式
             :return: 删除数据id
             """
             tb = eval("self.db_client.{}".format(tbname))
@@ -354,7 +353,7 @@ class MongodbDatabaseTools(object):
             """
             更新匹配到的第一条数据
             :param tbname: MongoDB表名
-            :param filter_json: 过滤json
+            :param filter_json: 过滤json, _id必须用ObjectId("5ff2c39364efd65eed78597e")方式
             :param update_json: 更新json
             :param upsert: 更新插入开关
             :return:
@@ -367,7 +366,7 @@ class MongodbDatabaseTools(object):
             """
             更新多条数据
             :param tbname: MongoDB表名
-            :param filter_json: 过滤json
+            :param filter_json: 过滤json, _id必须用ObjectId("5ff2c39364efd65eed78597e")方式
             :param update_json: 更新json
             :param upsert: 更新插入开关
             :return:
@@ -380,7 +379,7 @@ class MongodbDatabaseTools(object):
             """
             查询匹配到的第一条数据
             :param tbname: MongoDB表名
-            :param filter_json: 过滤json
+            :param filter_json: 过滤json, _id必须用ObjectId("5ff2c39364efd65eed78597e")方式
             :param projection_json: 显示json
             :param sort_json: 排序json
             :param skip: 跳过行数
@@ -388,14 +387,19 @@ class MongodbDatabaseTools(object):
             :return:
             """
             tb = eval("self.db_client.{}".format(tbname))
-            return tb.find_one(filter=filter_json, projection=projection_json, sort=list(sort_json.items()), skip=skip,
-                               limit=limit)
+            result = tb.find_one(filter=filter_json, projection=projection_json, sort=list(sort_json.items()),
+                                 skip=skip,
+                                 limit=limit)
+            if result is not None:
+                if result.__contains__("_id"):
+                    result['_id'] = str(result['_id'])
+            return result
 
         def find(self, tbname, filter_json=None, projection_json=None, sort_json={}, skip=0, limit=0):
             """
             查询多条数据
             :param tbname: MongoDB表名
-            :param filter_json: 过滤json
+            :param filter_json: 过滤json, _id必须用ObjectId("5ff2c39364efd65eed78597e")方式
             :param projection_json: 显示json
             :param sort_json: 排序json
             :param skip: 跳过行数
@@ -407,6 +411,8 @@ class MongodbDatabaseTools(object):
             items = tb.find(filter=filter_json, projection=projection_json, sort=list(sort_json.items()), skip=skip,
                             limit=limit)
             for item in items:
+                if item.__contains__("_id"):
+                    item['_id'] = str(item['_id'])
                 result.append(item)
             return result
 

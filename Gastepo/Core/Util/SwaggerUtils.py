@@ -57,38 +57,42 @@ class SwaggerTools(object):
         swagger_data_dict_list = []
         try:
             for id, swagger_res_dict in enumerate(self.swagger_res_dict_list):
+                api_id_list = []
+                api_path_list = []
+                api_method_list = []
+                api_scenario_list = []
+                api_title_list = []
+                api_consume_list = []
                 swagger_api_name = swagger_res_dict.get("info").get("title")
                 swagger_api_host = swagger_res_dict.get("host")
                 swagger_api_host = swagger_api_host if swagger_api_host is not None else "ip:port"
                 swagger_base_path = swagger_res_dict.get("basePath") if swagger_res_dict.get("basePath") != "/" else ""
                 swagger_base_path = swagger_base_path if swagger_base_path is not None else "/basepath"
                 swagger_api_urlpath = list(swagger_res_dict.get("paths").keys())
-                api_testcase_id = ["API_{}".format(i) for i in range(1, len(swagger_api_urlpath) + 1)]
-                swagger_api_method = [list(swagger_res_dict.get("paths").get(urlpath).keys())[0] for urlpath in
-                                      swagger_api_urlpath]
-                swagger_api_scenario = [value[0] if isinstance(value, list) else None for value in
-                                        [list(swagger_res_dict.get("paths").get(urlpath).values())[0].get("tags") for
-                                         urlpath in
-                                         swagger_api_urlpath]]
-                swagger_api_title = [list(swagger_res_dict.get("paths").get(urlpath).values())[0].get("summary") for
-                                     urlpath in
-                                     swagger_api_urlpath]
-                swagger_api_consumes = [value[0] if isinstance(value, list) else None for value in
-                                        [list(swagger_res_dict.get("paths").get(urlpath).values())[0].get("consumes")
-                                         for
-                                         urlpath in
-                                         swagger_api_urlpath]]
-                swagger_data_dict = dict(ID=api_testcase_id,
+                for current_api_urlpath in swagger_api_urlpath:
+                    current_api_methods = list(swagger_res_dict.get("paths").get(current_api_urlpath).keys())
+                    for api_id, current_api_method in enumerate(current_api_methods):
+                        api_id_list.append("API_{}".format(api_id + 1))
+                        api_path_list.append(current_api_urlpath)
+                        api_method_list.append(current_api_method)
+                        tags = swagger_res_dict["paths"][current_api_urlpath][current_api_method]["tags"]
+                        api_scenario_list.append(tags[0] if isinstance(tags, list) else None)
+                        api_title_list.append(
+                            swagger_res_dict["paths"][current_api_urlpath][current_api_method]["summary"])
+                        temp = swagger_res_dict["paths"][current_api_urlpath][current_api_method]
+                        consumes = temp["consumes"] if temp.__contains__("consumes") else None
+                        api_consume_list.append(consumes[0] if isinstance(consumes, list) else None)
+                swagger_data_dict = dict(ID=api_id_list,
                                          Project=swagger_api_name,
-                                         Scenario=swagger_api_scenario,
-                                         Title=swagger_api_title,
-                                         BaseUrl="{}://{}{}".format(self.swagger_protocols[id],
-                                                                    swagger_api_host,
-                                                                    swagger_base_path) if self.swagger_domain_url_list is None else
+                                         Scenario=api_scenario_list,
+                                         Title=api_title_list,
+                                         BaseUrl="{}://{}".format(self.swagger_protocols[id],
+                                                                  swagger_api_host) if self.swagger_domain_url_list is None else
                                          self.swagger_domain_url_list[id],
-                                         UrlPath=swagger_api_urlpath,
-                                         Method=swagger_api_method,
-                                         Consumes=swagger_api_consumes,
+                                         UrlPath=["{}{}".format(str(swagger_base_path)[:-1], api_path) for api_path in
+                                                  api_path_list],
+                                         Method=api_method_list,
+                                         Consumes=api_consume_list,
                                          Platform="",
                                          Level="Normal",
                                          Active=False,

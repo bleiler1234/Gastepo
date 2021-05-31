@@ -826,6 +826,8 @@ class AdvanceAssertionTools(AssertionTools):
                     expect_vars = emoji_to_str(["" if assert_dict.get("expect") == [] else assert_dict.get("expect")])
                 if expect_vars == []:
                     expect_vars = [""]
+                if assert_dict.get("matcher") == "instance_of":
+                    expect_vars = [eval(expr) for expr in expect_vars]
                 invalid_matchers = self.check_matcher_type(matcher_info=assert_dict.get("matcher"))
                 if invalid_matchers != []:
                     raise AssertionError('断言信息中matcher断言器"{}"当前并不支持, 请重新指定！'.format(invalid_matchers))
