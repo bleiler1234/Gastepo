@@ -18,7 +18,4 @@ Thumbs.db
 .idea/
 *.project
 __pycache__/
-Report/
-Result/
-Docker/
-Manual/
+Output/

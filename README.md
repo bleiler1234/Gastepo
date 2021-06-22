@@ -17,6 +17,8 @@
   * 请求工具：*Requests*
   * 响应获取：*JsonPath*
   * 断言工具：*Hamcrest*
+  * 单元测试：*Unittest*、*Coverage*
+  * 代码扫描：*SonarQube*
   * Web服务：*Flask*、*FastApi*
   * 部署方式：*Docker*、*Jenkins*
 
