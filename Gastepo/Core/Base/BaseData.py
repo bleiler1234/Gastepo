@@ -20,6 +20,9 @@ SERVER_PATH = os.path.join(BASE_PATH, 'Core', "Server")
 # ------------ 测试用例路径 -----------
 TESTCASE_PATH = os.path.join(BASE_PATH, 'TestSuite', 'TestCase')
 
+# ------------ 单元测试路径 -----------
+QA_PATH = os.path.join(BASE_PATH, 'QA')
+
 # ------------ 运行输出路径 -----------
 OUTPUT_PATH = os.path.join(BASE_PATH, 'Output')
 

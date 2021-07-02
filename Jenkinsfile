@@ -47,7 +47,7 @@ pipeline {
                 println "[End]: Test Report has been generated."
             }
         }
-        stage("DindDing Notification") {
+        stage("DingDing Notification") {
             when {
                 environment name: "project", value: "Gastepo"
             }
